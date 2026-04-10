@@ -1,0 +1,102 @@
+Git works on your computer
+services like GitHub, GitLab, or Bitbucket to share your work with others. These are called remote repositories.
+
+===========================================================Git Commands:=================================================
+
+git --version or git -V -- to check version of the git
+
+----------------------------------------------------------git congigure---------------------------------------
+
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --list -- to see all the config
+
+Initialize git in the current directory and make it a git repository
+
+git init -- to make a directory/folder into a git repo
+
+git status -- Check which files are tracked
+-- all new files in a directory/repo are untracked, you have to add/stage the files so that git can track them for any changes.
+-- An untracked file is any file in your project folder that Git is not yet tracking.
+-- A tracked file is a file that Git is watching for changes.
+
+-------------------------------------------------------Staging Env-------------------------------------------------------------
+
+-- You use it to tell Git exactly which files you want to include in your next commit.
+-- This gives you control over what goes into your project history.
+
+git add <file> -- Stage a file
+git add --all or git add -A - Stage all changes
+git restore --staged <file> - Unstage a file  -- untrack a file
+
+-------------------------------------------------------Git Commit----------------------------------------------------
+
+-- A commit is like a save point in your project.
+-- It records a snapshot of your files at a certain time, with a message describing what changed.
+-- You can always go back to a previous commit if you need to.
+
+git commit -m "message" - Commit staged changes with a message
+git commit -a -m "message" - Commit all tracked changes (skip staging)
+git log - See commit history
+git commit -- it will prompt you to write multi line message
+
+
+git commit --allow-empty -m "Start project" -- Create an empty commit
+git commit --no-edit -- Use previous commit message (no editor)
+
+
+git commit --amend --no-edit -- Quickly add staged changes to last commit, keep message
+git commit --amend -m "Corrected message" -- use this to fix the typo in your last commit.
+
+
+git reset --soft HEAD~1 -- undo the last commit and keep all your files staged.
+
+-------------------------------------------------------View Commit History---------------------------------------
+
+-- To view the history of commits for a repository.
+
+git log
+git log --oneline -> For a shorter view
+git log --stat --> To see which files changed in each commit
+
+git diff file_name --> to see what changed from prev commit
+
+---------------------------------------------Git Tags----------------------------------
+
+Git tag serves as a static, immutable pointer to a specific commit in your repository's history.
+Unlike branches, which are designed to move and evolve with new commits, a tag always points to the same commit it was originally created for.
+
+Tags are primarily used to mark significant points in a project's history, most commonly for:
+Releases, Milestones, Historical Restore Points
+
+Lightweight Tag -- its like a bookmark, just a name for a commit, quick and simple, but does not store extra information.
+git tag v1.0 -- after a commit add this tag and mark a milestone in your project.
+git tag <tagname>
+
+Annotated Tag -- stores your name, the date, and a message,most recommended as it stores more data.
+git tag -a v1.0 -m "Version 1.0 release" --> write a message too.
+git tag -a <tagname> -m "message"
+
+git tag v1.1 1a2b3c4d -- tag a old commit by specifying its hash name
+git tag <tagname> <commit-hash>
+
+git tag -- to list all tags
+
+git show <tagname> -- show tag details
+
+*********Pushing commits with git push does not push your tags, You must push tags explicitly as shown above*****************
+
+git push origin v1.0 --tags exist only on your local computer,If you want others to see your tags, you need to push them to your remote repository.
+-- push all your tags manually/explicitly to the remote repo to make it public
+
+git push --tags -- to push all your local tags all at once
+
+git tag -d v1.0 -- to delete a tag locally
+
+git push origin --delete tag v1.0 -- to delete tag in remote repositories
+
+git tag -f v1.0 <new-commit-hash>
+git push --force origin v1.0 -- If you need to move a tag to a different commit and update the remote, use --force
+
+
+

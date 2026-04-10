@@ -1,0 +1,24 @@
+lclrssm9.ngco.com ------main jump server to access or connect all servers.
+ 
+loblaw service now ------https://loblaw.service-now.com/
+ 
+loblaw webmail ----------https://outlook.loblaw.ca
+ 
+loblaw ITIS-UNIX ------Mail - ITIS-UNIX - Outlook (mcas.ms)
+ 
+citrix workspace url ------https://loblawremote.cloud.com/
+ 
+jira link ------https://jira.lblw.cloud/secure/Dashboard.jspa
+
+--------------------------------------------------------------------------------------------------------------
+
+To check the productions Job status use below URL
+ 
+http://prd-autosys-wcc.ngco.com:8080/wcc/ui/Login.html
+ 
+------------------------------------------------------------------------------------------------------------- 
+
+To check the QA Job status use below URL
+https://wcc2-qa.ngco.com:443/wcc/ui/Login.html
+
+--------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,26 @@
+lsuser user_name --> to display user attribute
+
+lssrc -s sub_systemname
+lssrc -a -- all services
+
+HR1 server password reset:
+
+/usr/seos/bin/selang -c "cu userid  pwasown  (givenpassword) unix"
+
+Eg: /usr/seos/bin/selang -c "cu teramki pwasown  (Aspect1400) unix"
+
+reset unsuccessful login count:
+  chsec -f /etc/security/lastlog -a unsuccessful_login_count=0 -s userid
+  
+unlock account:
+  chuser account_locked=false userid
+
+to lock an AIX account:
+  chuser account_locked=true userid
+  
+User creation:
+
+mkuser home=/home/<user_name> shell=/usr/bin/ksh groups=staff <user_name>
+
+mkuser home=/home/satsahu shell=/usr/bin/ksh groups=sysadmin,staff satsahu
+mkuser home=/home/ramg shell=/usr/bin/ksh groups=sysadmin,staff ramg

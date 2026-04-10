@@ -1,0 +1,28 @@
+System related, service related, hardware related commands:
+
+systemd files : these will have several unit files in them, which can be changed configured to modify the unit's behaviour
+
+This is the priority of the files which will take effect in case smtg is changed
+1. /etc/systemd/system/
+2. /run/systemd/system/ -- stores runtime systemd units
+3. /lib/systemd/system/ -- installed system, systemd files are found in this directory, least priority
+
+cat /etc/systemd/system/httpd.service -- check and understand what all options are avilable for the service
+
+to edit the systemd unit files, the command is:
+systemctl edit <unit_name> -- use this command to edit and unit's config files
+-- this will create a new override file under <unit.d> directory and this will not edit the actuall config file.
+-- everything in this overide file will be commented, uncomment and do the changes where you want to change and also uncomment the section header and save the file, 
+you do not have uncomment everything!!.
+-- but this will not take effect, so go to the top of the file and read instructions.
+-- now just add the section header and change that you want to make, and save it, the file will be saved.
+-- to undo the changes just delete the override file, " rm -f /etc/systemd/system/unit.d/overide.conf".
+
+to make permanent changes and not just override use :
+systemctl edit --full <unit>
+
+After making changes: reload all the config files, meaning ask the systemd daemon to reload the systemd files and directories to memory.
+systemctl daemon-reload
+
+
+

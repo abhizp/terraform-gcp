@@ -1,0 +1,139 @@
+Cut command:
+
+cut -c --range-- file_name  --> cut based on character.
+cut -c 1 abhi.txt --> to print the first character of the file.
+cut -c 1-5 abhi.txt --> to print the first 5 characters
+cut -c 2- abhi.txt --> print all the charcter of line starting from 2nd character.
+cut -c 1,3,5,8 abhi.txt --> to print the 1st,3rd,5th and 8th character of the lines.
+cut -c 8,5,1,3 abhi.txt --> same as above
+
+cut -b --range-- abhi.txt --> cut based on byte size, there can multi byte character or single byte.
+cut -b 1 abhi.txt --> to print the first byte of each line in the files, usually one character = one byte, but some 
+character might multi byte too
+
+cut -f --range-- abhi.txt --> to cut the values based on fields, the fields are sepated by <tab>, not space.
+so use delimeter:
+echo "one,two,three" | cut -d ',' -f 1 --> the fileds are spearated using ',' as the delimeter.
+
+-- you can use only single character as a delimeter.
+
+Q] change the output delimeter, -- usually the output delimeter is same as the input delimter, to alert this please use the below.
+
+cut -d ',' -f 1,2 --output-delimiter='|' abhi.txt
+
+Q] to get opposite of the cut command's output or to complement the output:
+
+cut -d ':' -f 1 --complement /etc/passwd  --- you will get everything but the first field.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Awk command:
+
+awk -F 'DATA:' '{print $4}' abhi.txt  -- here the field seperator is 'DATA:' and -F is filed seperator option, and '{}' in
+ this the action happens.
+awk -F ':' '{print $1, $4}' abhi.txt -- to print the 1st and 4th value of each line from the file. -- the o/p is seperated 
+by space by default, if "," is given and if "," is removed both the field just merge.
+-- to change output field seperator(OFS) in the output use:
+awk -F ':' -v OFS=',' '{print $3}' abhi.txt -- now the o/p will be seperated by ","
+awk -F ':' '{print $2 ',' $8}' abhi.txt -- instead of OFS just print ',' after the first field.
+-- awk considers all whitespace/space/empty space as same, all are same, they can be before or after the words/data.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Sort command:
+
+sort -n --> sort based on number
+sort -r --> reverse the sort
+sort -h --> sort based on human readable format 
+sort -u --> print only unique lines
+
+sort -t ':' --> specify field seperator to create fields
+sort -k 3 --> give the field number on which the sort will perform its action.
+
+eg : cat /etc/passwd | sort -t ':' -k 3 -n --> created fields using feild-seperator(-t ':') and sorted on 3 column(-k 3) based on numbers(-n)
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Uniq commad:
+
+it removes all the duplicate lines from the given file/list
+works only on sorted files
+
+sort -nr file | uniq -- use case
+sort -nr file | uniq -C --> it gives the count of number of times the line has occured.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Wc command: word count
+
+wc [-wcl] file_name --> syntax
+
+wc file_name --> syntax
+gives : lines(l) words(w) characters(c) file_name
+
+wc -l --> lines
+wc -c --> characters 
+wc -w --> words
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Grep command:
+
+grep word file_name --> syntax
+
+grep -v word file_name --> print all lines except the line having that word
+grep -c word file_name --> count the number of lines having that word in it.
+grep -i --> ignore case
+grep -r --> recursivel search directory
+grep -e word1 -e word2 -e word3 --> specify multiple words to search
+
+grep -E 'word1|word2' -- matches lines having those two words
+grep -E '^(word1|word2)$ --> matches lines starting with word1 and ending with word2
+grep -E 'error[0-9]?' --> in the place of '?' any of digits between 0 to 9 can be present.
+grep -E '[0-9]+' -->matches line with one or more numbers in it
+
+---------------------------------------------------------------------------------------------------------------------------
+
+Sed command:
+Stream editor, used best after/before pipes, used to modify text in place, substitute, remove lines,append txt, insert txt.
+
+sed is used programatically and not interactively,
+
+in VI editor, you can use macros
+
+substitute/replace : -- case sensitive
+sed 's/search-pattern/replacement-string/flags' file_name --> syntax
+sed 's/abhishek/johncena' names.txt --> to replace/substitute first occurance of 'abhishek' with 'johncena' on each line
+sed 's/abhishek/johncena/i' names.txt --> same as above but case insensitive
+sed 's/abhishek/johncena/g' names.txt --> global search flag, to replace/substitute all the occurances of 
+'abhishek' with 'johncena' on each line
+sed 's/abhishek/johncena/2' names.txt --> to replace/substitute second occurance of 'abhishek' with 'johncena' on each line.
+sed -i.bak 's/abhishek/johncena/2' names.txt --> to permanently edit the file and save the changes.
+
+echo "/home/jason" | sed 's#/home/jason#/home/jason/mamoa/#' -- you use any delimeter to seperate the feilds.
+
+deleting:
+
+sed '/This/d' Abhi.txt --> deletes the line from the file which has 'This' in it
+sed '/^#/d' Abhi.txt --> it deletes all the lines which start from #
+sed '/^$/d' Abhi.txt --> deletes all the empty lines.
+sed '/^#/d ; /^$/d ; s/abhi/john/' Abhi.txt --> multiple activities at same time. all seperated by ";"
+sed -e '/^#/d' -e '/^$/d' -e 's/abhi/john/' Abhi.txt --> using option -e you can use multiple actions.
+sed '2 s/abhi/john/' abhi.txt --> only perform action only on 2nd line
+sed '1,3 s/abhi/john/' abhi.txt --> perform action on 1st and 3rd lines only
+
+
+TEE command:
+
+echo "12.12.12.12 hostname" | sudo tee -a /etc/hosts --> appending (-a) the "12.12.12.12 hostname" to the end of the 
+/etc/hosts as the input redirection will not work on such files
+
+dmidecode -s system-product-name -- to check whether the machine is a VM ware or not.
+
+sysctl -- to change the default value at the kernel, its safer.
+
+
+
+
+
+

@@ -1,0 +1,62 @@
+1. Check whether corxtex is installed or not in the server
+
+check path /opt/traps -- exists or not
+
+If its not installed:
+
+get the corxtex agent :
+
+2. corxtex agent location:
+
+10.227.40.53:/itsd/avsdmt/"LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz"
+
+-- login to storelink.hosts.shoppersdrugmart.ca
+path : /itsd/avsdmt/
+file: "LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz"
+
+3. then scp this to the target machine where the cortex is missing:
+
+scp /itsd/avsdmt/"LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz" root@host_name:/tmp
+
+or 
+
+go to path /itsd/avsdmt/ in storlink server and do
+
+scp "LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz" root@host_name:/tmp
+
+after successfully copying the file to /tmp
+
+4. untar the "LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz" using below command
+
+command: tar -xvzf 'LCL-LinuxAgent-8-7-100-CE_sh (1).tar.gz'
+
+create /etc/panw/
+
+command: mkdir -p /etc/panw/
+
+5. now copy the untarred files to the /etc/panw location using below command:
+
+command: cp -pr cortex-8.7.100.136016.sh cortex.conf /etc/panw/.
+
+6. now give the "cortex-8.7.100.136016.sh" executable permission:
+
+chmod +x cortex-8.7.100.136016.sh
+
+7. and now run the script
+
+./cortex-8.7.100.136016.sh
+
+or 
+
+sh -xv cortex-8.7.100.136016.sh
+
+vldihdr010	10.194.71.17		 
+clhepocpc362	10.105.230.235, 10.108.246.230, 172.17.0.1, 172.19.0.1		 
+clhepocsb045	10.227.132.6		 
+vlbknpr032	10.216.4.14	
+vlbknpr044	10.198.6.138	
+vlbknpr033	10.216.4.15	
+vlbknpr029	10.216.4.16	
+vlbknpr028	10.216.4.13	
+vlbknpr036	10.216.4.18	
+vlbknpr037	10.216.4.19	

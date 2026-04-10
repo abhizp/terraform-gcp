@@ -1,0 +1,59 @@
+HR1 server password reset:
+
+/usr/seos/bin/selang -c "cu userid  pwasown  (givenpassword) unix"
+
+Eg: /usr/seos/bin/selang -c "cu jessgib pwasown  (Camryn21!) unix"
+
+Add user in the lin/linux servers:
+
+useradd -m -s /bin/bash -G group_name -c "Comment" user_name  --> to create user with new home directory
+passwd user_name -- set passwd
+or 
+echo "passwd" | passwd --stdin username
+
+useradd -d /opt/traps -s /bin/bash -G group_name -c "Comment" user_name ---> create user specified home directory
+useradd -d /opt/traps -s /usr/sbin/nologin -c "service/daemon" -r user_name ---> to create a system service account or daemon to run those services continously, having UID < 1000 and has no home directory and no login shell.
+-s /usr/sbin/nologin --> will not let user to login, and dsiplays message inorder to change this message edit " /etc/nologin.txt " file.
+
+usermod -aG groupname username -- to modify or add extra groups
+usermod -g <gid> username -- to set a group as primary group.
+userdel username -- > to delete the user.
+userdel -r username --> delete the user and also the home directory.
+
+groups --> use this to see which all groups member you are
+groups username -- same as above
+cat /etc/group --> to view all the existing groups
+
+groupadd groupname --> to add group
+groupadd -g 200 groupname --> with specified group name
+
+groupmod -g --> to change GID
+groupmod -n --> rename group
+
+chage -E YYYY-MM-DD username --> to change the expiry of the user.
+chage -l user_name
+passwd -S <username> -- to check whether the user account is locked.
+
+faillock --user <username> --reset ---> to unlock the user. if locked
+/var/run/faillock -- to check the list of locked user
+rm /var/run/faillock/myUsername -- to remove the user from lock list
+
+or 
+
+pam_tally2 --user=username -- to check
+
+pam_tally2 --user=username --reset --> to reset
+
+Sudoers file:
+
+username ALL:ALL NOPASSWD:ALL  --> to give full root access
+%groupname ALL:/bin/su - root --> allowing user of that group to switch to root/any other user with passwd
+
+finger <username> -- to get all the details about the user.
+pinky <username> -- to get all the details about the user.
+
+----HPUX -----------------------------
+
+/usr/lbin/getprpw <username> 
+
+modprpw -k <username> -- to unlock the account 

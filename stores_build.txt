@@ -1,0 +1,136 @@
+1. Create JSON file:
+
+Below details can be found JIRA ticket assigned to you.
+{
+"store_number": "05134",    #store number always start with 0
+"store_name": "XXX's NF Sudbury Regent",  
+"company_number": "11",
+"company_name": "Nofrills",
+"banner_number": "7",
+"banner_name": "NoFrills",
+"merchant_id": "",
+"street_details": "",
+"city_details": "Sudbury",
+"province_details": "ON",
+"postal_code": "",
+"phone_code": "111",
+"phone_number": "111-1111",
+"fax_num": "111-1111",
+"store_lang": "E",
+"second_lang_details": "E",
+"sister_store": "07191"
+}
+
+-- upload the json file to bucket.
+
+2. Take full info about timezone, subnet, region of the store so you can fill it out in variable section
+
+- run validate state, it will look for the json file uploaded in bucket.
+
+3. Then run the pipeline and reserve IP's for pos and boss and check if they are present in GCP ( IP Address ).
+
+4. then request for swedamart license through a mail,
+
+- update the notepad in the sharepoint, after updating it download it and change the date on the day you added the ip to the notepad.
+
+5. Raise DNS request for all 3 servers
+
+6. Raise firewall requests
+- raise firwall for all ports, for all the servers, between each other, ensuring all 3 servers can talk to each other
+- raise 2 way firewall for sister store ip's and your store ip's
+- lcl-<store_number> excel sheet will be given in CRQ, check there, in that there will be sheet with name "REF-network allocation", take Ip mentioned in ID feild.
+  raise both side request for all 3 vm's to the mentioned subnet.
+
+7. execute the host file to bucket job. -- boss
+
+8. spin up the VM's all 3.
+
+9. wait till all the VM's are up and also wait till all firewall request are closed only then move to next step.
+
+10. After firewall requests are closed, move to next step, execute steps and follow documentation, its correct from there on.
+
+Verify firewall requests:
+https://confluence.lblw.cloud/spaces/SRE/pages/953701764/Firewall+Validation+for+NSO+FLIP
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+SQL server:
+
+All steps are automated, no worries, except for the update the server step,
+after "install oiq" job login to server and check for updates, if any update it. and then remaining steps are automated.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+BOSS server:
+
+Boss server do not runs jobs till all pos jobs are done, do it till task 13 and wait for pos server completion, and then setup database initilization.
+
+then follow confluence:
+
+there is logic to write below commands,it's written in the page itself, refer personality sheet in CRQ for printer type and IP address.
+
+lpadmin -p 704 -v socket://10.148.219.31/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "Cash Office Printer"
+
+lpadmin -p netprtr1 -v socket://10.148.219.30/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_MP_C4502_PS.ppd.gz -E -L "Department Office printer"
+
+lpadmin -p netprtr2 -v socket://10.148.219.32/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_C430DN_PS.ppd.gz -E -L "Manager Office Printer"
+
+lpadmin -p netprtr3 -v socket://10.148.219.33/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "BDR Printer"
+
+lpadmin -p netprtr4 -v socket://10.148.219.42/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "Click & Collect"
+
+POS tasks:
+
+Follow documentation, its clear and do not worry.
+
+
+for task 25.1:
+
+-- need to create 2 files.
+-- keywords file: login to boss server and refer boss task 18, 
+
+https://gitlab.lblw.ca/lt-stores/srestores/store-deploy/store-profile-database-utilties/-/pipelines/8093133
+https://gitlab.lblw.ca/lt-stores/srestores/store-deploy/store-profile-database-utilties/-/pipelines/8093137
+https://gitlab.lblw.ca/lt-stores/srestores/store-deploy/store-deploy-pipeline/-/pipelines/8093163
+
+
+----------------------------------------------------
+
+
+Price reduce command:
+upc="4011" #change 1234
+echo "insert into storeinfo
+select item_upc_cd,'1',item_price_method,curr_split_qty,curr_pos_rtl_amt-0.01,today,today,'','','','','','','04',current,current,'67206'
+from isppm where item_upc_cd = '$upc'" | dbaccess boss
+echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
+/x/isp/tman/bin/bsync -i /tmp/bsync.$upc.upc
+
+
+To verify the price change:
+upc="4011"
+echo "select a.item_upc_cd, a.item_desc,
+'HOST',a.item_price_method,a.curr_split_qty,a.curr_pos_rtl_amt,
+'STORE',b.item_price_method,b.curr_split_qty,b.curr_pos_rtl_amt
+from isppm a, outer storeinfo b
+where a.item_upc_cd = '$upc'
+and b.main_upc = a.item_upc_cd" | dbaccess boss
+
+
+revert command:
+upc="4011" #change 1234
+echo "delete from storeinfo where main_upc = '$upc'" | dbaccess boss
+#for POS/ESL sync
+echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
+/x/isp/tman/bin/bsync -i /tmp/bsync.$upc.upc
+
+
+To verify the price change:
+upc="4011"
+echo "select a.item_upc_cd, a.item_desc,
+'HOST',a.item_price_method,a.curr_split_qty,a.curr_pos_rtl_amt,
+'STORE',b.item_price_method,b.curr_split_qty,b.curr_pos_rtl_amt
+from isppm a, outer storeinfo b
+where a.item_upc_cd = '$upc'
+and b.main_upc = a.item_upc_cd" | dbaccess boss
+
+

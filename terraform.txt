@@ -1,0 +1,25 @@
+Basic terraform template useful everywhere:
+
+# Create the mynetwork network
+resource [RESOURCE_TYPE] "mynetwork" {
+name = [RESOURCE_NAME]
+# RESOURCE properties go here
+}
+
+terraform fmt -- To rewrite the Terraform configuration files to a canonical format and style, run the following command
+
+The module block in Terraform is used to call and configure a child module from within a parent (calling) module. Modules are self-contained, 
+reusable packages of Terraform configurations that help organize code, promote consistency, and abstract complexity
+
+eg:
+module "mynet-vm-2" {
+  source           = "./instance"
+  instance_name    = "mynet-vm-2"
+  instance_zone    = "asia-east1-b"
+  instance_network = google_compute_network.mynetwork.self_link
+}
+
+use quotes around the literal strings, like name and locations and values, id's
+-- do not use string if you're referring variables or booleans and such things.
+-- 2 space indentations in each nested block
+-- 

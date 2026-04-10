@@ -1,0 +1,112 @@
+Docker commands:
+
+Dockerfile: has all the information required to build a container.
+docker file is in the same directory as the env file, requirements and the app's directory.
+execute docker build command from the directory where your docker file is present.
+
+docker build . --> execute this in the same directory where dockekfile is present.
+docker build -t "container_name" . --> to give a tag to the docker container
+
+docker images -- to list all the images in the local host
+
+-- the application is built and is in the form of a image now, it will have image id.
+
+To run your application:
+
+docker run <image_id>
+
+to run interactively:
+
+docker run -it <image_id>
+
+to map/bind the docker's port with the host's port:
+
+docker run -p 8000:8000 -it <image_id>
+
+docker run -d -- run docker in detached mode.
+
+docker run --help -- for more arguments
+
+Multi-stage docker image:
+
+distroless image: -- no OS image, bare minimum
+
+Bind mounts: -- you have to give a full path to directory on the local host and this bind it with container's directory, 
+
+docker run -d \
+  -it \
+  --name devtest \
+  --mount type=bind,source="$(pwd)"/target,target=/app \
+  nginx:latest
+  
+source can be any directory on the local host
+
+Bind mounts in Docker are a method for mapping a file or directory on the host machine to a directory within a container. 
+Unlike Docker volumes, which are managed by Docker in a specific storage area, 
+bind mounts rely on the specific directory structure and absolute path of the host's filesystem
+
+They are highly effective for development environments because changes made on the host are immediately reflected in the container. 
+
+
+
+Volumes:
+
+docker volume ls -- to list all the running volumes
+docker volume create <volume_name> -- to create a new volume
+docker volume inspect <volume_name> -- to inspect the details of volume, get all details
+docker volume rm <volume_name> -- to delete a specific volume
+docker volume prune -- to remove all unused volumes
+
+one volume can be attached to multiple containers
+
+docker run -d --mount source=myvol2,target=/app <image_name/id> --to attach a volume to a image.
+
+docker ps -a -- to get the list of all the containers on the host
+docker ps -- to get the list of only running containers
+
+docker inspect <container_name> -- to get all the details of the containers
+
+stop the container before deleting the volume
+
+docker exec -it <container_identifier> <command> -- to run few commands in already running docker container
+docker exec -it <container_identifier> /bin/bash -- this will open a interactive shell terminals
+
+docker network ls -- to list out all the network
+docker network rm <network_name> -- to remove a network
+
+docker network create <network_name> -- to create a network -- by default bridge network will be created.
+The containers inside the same bridge can talk to each other but can not talk to other containers on diff bridge
+
+docker run -d --name <container_name> --network=<network_name> <image> -- to run a container in certain network
+
+docker run -d --name <container_name> --network=host <image> -- the container will use same IP address as the host, container is binded with the host's IP address
+
+Docker compose:
+
+docker-compose up -- to build the images and also to start containers
+
+docker compose down -- will get rid of all container's related to the compose file.
+
+eg: compose.yaml
+
+version: '3.8'                             -- optional, this is the version of your compose file
+services:                                  --- write all container/images/services under this
+  web:                                  # <--- This is the Service Name
+    image: nginx:latest                    -- image to pull
+    container_name: production-nginx    # <--- This is the optional manual container name, visible by docker ps or visible in network
+	hostname: webserver                    -- name of the service/host running inside the container, visible by hostname command or in /etc/hosts
+    ports:
+      - "8080:80"
+	restart: always                     -- restart the container always, if it stops
+  db:                                # <--- This is the Service Name
+    image: mysql:5.7
+    environment:                         -- environment variable
+      MYSQL_ROOT_PASSWORD: password
+	depends_on:
+      - web2                             -- db will not start untill the web2 is ready
+  web2:                              # <--- Custom service name
+    build: .                          ------- path to ur Dockerfile
+    ports:
+      - "8000:5000"
+	volumes:		                    --- give the location of volume to be attached to the container
+      - ./html:/usr/share/nginx/html

@@ -1,0 +1,157 @@
+Commands:
+
+lshw -- list hardware
+
+tar command -----------
+tar -cvzpf file_name ./directory_to_be tarred.
+c -- create
+v -- verbose output
+z -- zip
+f -- specify file_name
+p -- preserve permissions
+
+tar -xvzf file_name -- to extract to the same directory structure.
+
+tar --same-owner -xvzf file_name -- to unzip with same owner permissions as it was wn tarred
+tar -xvzf file_name --no-same-owner -- to make yourself owner of the files when untarred
+
+dd command -------------
+
+dd -- copy convert -- to copy the entire disks data all at once
+
+dd if=/dev/sda of=/mnt/storage/sda.img status=progress -- to copy to the other disk and also see the progress
+if = input file
+of = output file
+/mnt/storage/sda.img -- created this file in the different disk and stores the image there, it literally copies eerything it even copies empty space too, the whole disk size
+
+dd if=/dev/sda of=/mnt/storage/sda.img status=progress bs=1M -- to increase speed
+bs -- to tell dd command how much block size to copy at once, default is 512 bytes
+
+dd if=/dev/sda of=/mnt/storage/sda.img status=progress bs=1M conv=sync,noerror -->
+conv -- to specify options, sync -- confirms if every bit is written line by line like perfect clone, noerror -- continues even if it encounters error.
+
+dd if=/dev/sda bs=1M | gzip -c > /mnt/storage/sda11.img -- to zip the file and create the image to save some space
+
+to restore the file:
+gunzip -c /mnt/storage/sda11.imgz | dd of=/dev/sdd1 bs=1M status=progress -- to restore the disk to original state.
+
+if not zipped
+
+dd if=/mnt/storage/sda11.img of=/dev/sdd1 bs=1M status=progress -- before restoring always unmount the disk.
+
+rsync command -----------
+
+rsync [OPTIONS] SOURCE DESTINATION - syntax
+you can copy files inside the server and also outside the servers.
+it only transfers differences between source and destination
+used to syncronize files
+
+inside server:
+
+rsync -azurhP ./Downloads ./backups -- inside server
+
+a -- archieve mode -- it preserves all the attributes like owner, timestamp etc..
+z -- zip it and transfer, and also unzips on destination
+u -- update, its skips files on destination if they are newer than source
+r -- recursively sync, usefull if there are sub directories
+P -- shows progress.
+h -- human readable format
+
+outside server :
+
+rsync -azurvhe ssh ./Downloads root@server_name:/root/directory/
+e ssh <command> -- specifies the shell to use ssh to do remote file transfer. -- it tells to open a ssh tunnel and transfer it over that tunnel,
+v -- verbose mode
+
+exclude/include few files while transfer:
+
+rsync -azurvhe ssh ./Downloads root@server_name:/root/directory/ --exclude "*.pdf" --include ".*" -- this is to exclude all pdf files and trasnfer the rest.
+rsync -azurvhe ssh ./Downloads root@server_name:/root/directory/ --include "*.pdf" --exclude ".*" -- this is to only transfer pdf files and exclude everything else.
+
+Dry run before actually executing:
+
+rsync -azurvhe ssh ./Downloads root@server_name:/root/directory/ --include "*.pdf" --exclude ".*" --dry-run
+A -- to preserve and transfer ACL permissions too.
+g -- to preserve and transfer group permissions
+o -- to preserve and transfer owner permissions
+
+================================================================================================================================================================
+To communicate with user via banner:
+
+motd -- message of the day.
+
+its present in /etc directory, if not create it.
+and type whatever you want and it will be printed
+
+mesg -- this command wil show you if normal users can message you or not.
+mesg n -- to turn off messaging, no one can message you.
+mesg y -- to turn on the messaging, anyone can message now.
+
+wall -- to broadcast message to everyone who is using the machine right now
+
+wall " message to be sent to all the users"
+ctrl + d -- to send the messages
+
+wall ablnu pt1(terminal name) " message to be sent " -- to just send to one particular user.
+
+========================================================To get new PV and extend VG and extend LV:===============================================================
+
+ifconfig -a -- to check IP address -- just a routine check
+
+fdisk -l -- To identify new disks added to the system.
+
+pvs -- to list physical volumes
+
+dmesg -- to check system logs, we can see the new addition of disks, the log will be noted
+
+ls -ltr /sys/class/scsi_host -- this directory holds the SCSI subsystem files, from this location system talks to its SCSI devices.
+
+for host in /sys/class/scsi_host/*; do echo "- - -" | sudo tee $host/scan; ls /dev/sd* ; done -- this triggers manual rescan new devices, 
+
+/sys/class/scsi_host/hostX -- Represents each SCSI controller
+echo "- - -" > scan --	Triggers rescan for new disks
+ls /dev/sd* or fdisk -l -- Verifies if new disks are detected
+
+fdisk -l -- Verifies if new disks are detected
+
+pvcreate /dev/sde -- to create a new physical volume
+pvs -- to verify if its created 
+
+vgs -- to get the VG name
+vgextend rootvg /dev/sde -- to extend the PV to that VG
+
+vgs -- to verify whether the VG is extended or not
+
+df -h -- to get the LV name which is to be extended
+
+lvextend -r -L +5G /dev/mapper/rootvg-optlv -- to extend the LV.
+
+hostnamectl set-hostname server_name -- this will take effect immediatly, but will not be shown in command prompt, you have to reboot to get it changed every where
+update /etc/hosts -- add a new line with ip addr and host name -- 127.0.1.1		server_name
+to edit the ssh config, to disable to the root login or any passwordfull access, edit /etc/ssh/sshd_config
+
+
+OS build, OS installation, network OS booting and installation
+disk management device management
+user management -- ACL
+kernel management, storage management disk allocation, disk management, disk handling
+cpu and memory utilization, cluster of servers.
+
+tail -c 524288000 trail > trail_bkp_20250913
+tail -c 2G trail > trail_bkp_20250913 -- to copy last 2 gb of the file and put it in other file.
+
+
+Journalctl command:
+1. journalctl -- to get all the log info, about everything in the system, services, hardware, etc..
+2. journalctl --since "YYYY-MM-DD HH:MM:SS" --until "YYYY-MM-DD HH:MM:SS" -- to see logs between a specific time range.
+3. journalctl -r -- to reverse the order and show the new entries first.
+journalctl -n 2 -- recent 2 entries
+journalctl | grep Centaur -- filter by keyword
+journalctl -p warning -- display logs based on priority -- (e.g., emerg, alert, crit, err, warning, notice, info, or debug)
+journalctl -o verbose -- you can get options too, like verbose mode
+journalctl --list-boots -- to view information about system boots
+journalctl -g "keyword1" -g "keyword2" -- filtering by keywords
+2. journalctl -f -- to display the live/following log entries
+tail -f -- also works in similar way.
+
+

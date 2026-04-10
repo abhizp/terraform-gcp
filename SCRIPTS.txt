@@ -1,0 +1,12 @@
+Scripts:
+
+User add script in lin servers:
+
+#!/bin/bash
+cp -rp /etc/passwd /etc/passwd-$(date +"%Y%m%d-%H%M%S")
+cp -rp /etc/shadow /etc/shadow-$(date +"%Y%m%d-%H%M%S")
+/usr/sbin/useradd -u 789281 -g sysadmin -G users,dialout,video -d /home/otel -m -c "OTEL user for SDM linux server" -s /bin/bash otel
+/bin/chown  otel:sysadmin  /home/otel
+/bin/echo 'otel:GBr2dqW,+7U`"].' | /usr/sbin/chpasswd
+/usr/bin/chage -m -1 -M 99999 -I -1 -W 7 -E -1 otel
+chage -l otel

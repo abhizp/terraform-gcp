@@ -1,0 +1,58 @@
+System design:
+computer understands only 0,1 and ntg else
+0 or 1 is called a bit/
+1 byte consists of 8 bits, the random/systematic arrangement of bit's makes a character it may be (0 or 1)
+1kb = 1024 byte
+1Mb = 1024 * 1024 byte or 1024kb
+and so on, Gb, Tb, Pb
+
+The first access point after the computer starts is storage
+-- it stores all the data in the form of bits.
+-- it stores OS, all other data which is needed.
+-- their are two types SSD, HDD
+-- the speed depends upon the read and write of the data to the disk, HDD is slower.
+
+Memory (RAM):
+-- while processing data, the RAM stores the data which is needed to be processed, the bigger the RAm the more faster the data processes.
+-- these are also disks but are way faster than storge disks, they read/write data at 5000mb/s.
+-- it holds data structure, variable and application data which are currently in use or that are gonna be processed.
+-- volatile memort, data is not persistent, power off data gone.
+
+ROM ( read only memory)
+-- non-volatile type of computer memory that permanently stores data and instructions needed for a device to start up, like the BIOS.
+-- it retains its information even when the power is turned off.
+-- slower for reading and writing.
+-- can not be alerted, has limitation, usually stores all the system boot time data.
+
+Cache:
+-- smaller in size than RAM, typically in mb's but has very high r/w speed often in nano seconds
+-- there are 3 levels of cache, L1 -- smallest in size and fastest in speed, embedded directly on cpu chip closest to core, Stores data the CPU is currently working on 
+-- L2 -- bit larger and slowe than l2, connected to cpu via highspeed bus, Stores data the CPU may need to access soon 
+-- l3 -- Slower than L1 and L2, but much faster than RAM and the largest of cache, Typically a single, large cache shared among all CPU cores on the processor chip
+       Used for data that is less likely to be needed immediately but may still be accessed occasionally, and helps with inter-core communication.
+-- frequently used data is stored in cache, it reduces average time to look/access data, optimizes cpu performance
+
+CPU looks for data in this order L1 cache -> L2 -> L3 -> RAM -> Storage
+-- CPU proccess all the data stored in the cache, memory and storage.
+-- it first read the code andd compiles it into the machine lanaguage i.e; bits and then executes it and operates/proccess
+
+Mother board:
+-- this is the board which connects all these components, it gives pathway for data flow and every component to talk and work accordingly.
+
+Key componets of system design:
+-- scalability
+-- maintainability
+-- efficiency
+-- reliability
+
+Data based, these 3 components are very imp
+-- moving data -- data movement between server, user to server, it must be smooth
+-- storing data -- selecting database, to retrieve or store data.
+-- transforming data -- converting logs to analyze or user data fo other things.
+
+
+INC14123545
+INC14125175
+
+lamtlwmcpr5
+lakrwmcpr3

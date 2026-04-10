@@ -1,0 +1,22 @@
+Store build files/links
+
+
+New store build sheet link:
+https://app.smartsheet.com/sheets/V9FFP7CrxWfJM3vMVMFGgXJ8M2GmxhPcjFpCCXm1?wx=ihMBbCnr6ee17CHL85nUls2uqk7PS9gJ076LV6hsqP7eoSRayrijk4F6uO9uIxOq&view=grid
+
+
+Confluence page link:
+https://confluence.lblw.cloud/pages/viewpage.action?pageId=827246700&spaceKey=SRE&title=Backoffice%2BStore%2BBuild%2BRunBook%2BGCP%2BManual%2Band%2BAutomated%2Btasks
+
+
+Confluence archeitecture link:
+https://confluence.lblw.cloud/spaces/SPFA/pages/581154330/Software+Defined+Store+-+Loblaw+Stores+Solution+blueprint+phase+1+-+MC4+Migration+Approach
+
+
+
+Gitlab pipeline link:
+https://gitlab.lblw.ca/lt-stores/srestores/buildvms
+
+
+Excel for store build:
+https://mtcad.sharepoint.com/:x:/r/sites/SoftwareDefinedStore/Shared Documents/2024 - Planning/Store List/Store Build.xlsx?d=w936449ccc03a489699c61c55ac65a2b3&e=4%3aa77e721728f948ab82a061185a955351&sharingv2=true&fromShare=true&at=9

@@ -1,0 +1,264 @@
+Storage:
+
+DAS : Direct attached storage -- the storage is attached to the server itself, its present physically in the client/system itself
+NAS : network attached storage
+SAN : storage area network, these both are protocals which are used to access the data/storage which present somewhere remotely.
+
+Small storage network, large storage network : differ by the amount of hard disk's the server can house, or the large number of servers together
+
+DAS is physcial and local, hence give alot of storage at first and then forget, but it may be used or wasted,
+instead use a centralized storage, and provide as much storage is required time by time.
+
+
+Cost Saving:
+Thin provisioning : You present more storage to users or systems than is physically available.
+					Actual physical storage is allocated only when data is written. -- very risky, be catious.
+
+Deduplication : it deletes the duplicate blocks on disk and frees some space for more utilization.
+compression : compressing the data till its utilized.
+replication : replicate the current data to a different place in case of disaster, first Deduplication and then replication is done to save space.
+
+Resiliency : SAN and NAS have very high resiliency, means no point of failure they always have redundant parts available as backup, they recover heal, very fast from any disater.
+as the storage is accross network, there can be a bit of latency, but the service provider will balance it by giving us more disk to read and write instead of one.
+
+Benifits:
+
+Centralized management
+disk less server --  not disk required at server, logical storage available to bootup.
+Storage tiering
+centralized backups
+snapshots
+disaster recovery
+			
+Types of storage media:
+
+HDD -- hard disk drive ( has rotating plate inside it)
+SSD -- solid state drive ( no moving parts, faster and newer) also called as "FLASH"
+
+Storage interface : this means how the ssd and hdd will communicate with the host/computer. This sets standard or protocal or way of communication.
+EG: SATA - Serial Advanced Technology Attachment -- enterprise grade
+SCSI : small computer system interface -- parallel transfer and slower
+SAS : serial attached SCSI -- new and bit better
+NVMe : non volatile memory express
+
+SSD and HDD has some interface on them, to communicate with system, which can be any of the above : like SATA HDD/ SATA SSD
+
+SATA in home computer and normal uses -- uses SATA cables for data transfer
+SAS -- in server and high performance 
+
+SAS is backwards compatible with SATA, means the SAS Bay or SAS box can take SATA SSD, HDD and SAS HDD, SSD
+
+SSD : high performance but high cost too
+SATA HDD : Less performance, high size/capacity availability and low cost
+SAS HDD : balance between performance, size and space availabilty
+
+SCSI and FC-AL( fibre channel arbitrated loop ) drives are legacy one's and are not compatible with other drives
+
+NVMe: interface + protocal
+	non volatile memory express -- new interface for storage transfer -- new tech
+	SATA and SAS were created specifically for HDD, and they might face problem with SSD.
+	NVMe is specially for SSD(flash) disks to take full advantage of PCIe
+	
+	NVMe is not compatible with SATA and SAS.
+	
+PCIe -- Peripheral Component Interconnect Express
+
+NVMe uses PCIe for connections for high speed, data transfer.
+uses PCIe lanes for data trasnfers, for high speed read write, lanes are basically connections or cables for data transfer, more lanes high speed
+
+PCIe -- used for high speed data transfer between cpu and connected components
+used by NVMe-SSD, wifi cards, raids and etcc
+more lanes more bandwidth more speed
+
+SCM : Storage class memory -- emerging
+-- This fits into memory slots, on the CPU, its physcial
+-- it has non volatile RAM (nvRAM) rather DRAM (dynamic RAM) means it can store the working data incase of any power outage
+
+HDD is getting less popular as SSD becomes cheaper. hence creating all flash storage
+
+
+RAID : redundant array of inexpensive disk / redundant array of independent disk.
+-- multiple disk are connected to make a single logical unit
+-- provides redundancy and improved performance or both compared to a single disk
+-- different raid levels give us different levels of redundancy/performance
+-- can be managed by software from OS or by RAID controller in hard ware
+
+RAID 0 : AKA stripped set
+-- better performance, no redundancy
+-- data is split evenly accross all the set accross disk, same data split and not copied hence no redundancy
+-- if any disk in the set fails, then all the data is lost.
+
+-- the read and write is faster because there is no copying going on, and just write and read, the write and read is done simultaneously in multiple disks
+-- the more number of disks the more better performance, write and read is done parallelely in these disk hence increasing performance.
+
+-- you can use different disk type, RPM speed and size in same storage system but not in same raid group.
+-- using different capacity disks, the usable size is limited to smallest disk size.
+
+RAID 1 : AKA Mirrored set
+-- the same data is written to both disks in the set, giving high redundancy, but less performance
+-- If one disk fails, the data is stored in other disk, high redundancy
+-- write performance is not improved, because writing in 2 disks
+-- read performance is improved, as reads can be serviced by both disks.
+
+RAID 4 :
+
+Data Striping: Data is split across multiple disks (like RAID 0).
+Dedicated Parity Disk: One disk is used exclusively to store parity information (used for recovery in case of disk failure).
+Minimum Disks Required: At least 3 disks — 2 for data, 1 for parity
+can tolerate upto 1 disk failure.
+
+RAID 5 :
+
+Same as RAID 4 but with distributed parity.
+Data can be recreated from parity if any one of the disk fails.
+read performance increased as multiple disk concurently service read, and write performance also increased.
+can tolerate upto 1 disk failure.
+There no single parity disk, instead there are parity blocks.
+
+RAID 6 :
+
+can tolerate upto 2 disk failure.
+2 parity blocks distributed accross disks.
+data can be recreated through parity if 2 disks fail.
+R/W performance increased
+
+Hybrid RAID :
+
+multiple raid levels nested for better performance.
+RAID 10 -- multiple raid 1 mirrored sets are nested inside a RAID 0 striped set
+RAID 0+1 -- multiple RAID 0 sets are nested into RAID 1 mirror
+RAID 50( 5 + 0 ) -- multiple RAID 5 parity sets are nested into RAID 0 stripped set
+
+SAN vs NAS
+
+NAS ( network attached storage ) : provides file level access to storage resources.
+-- the management of the file system resides with the remote storage system.
+-- NAS typically uses the already existing data network infra
+
+SAN ( storage area networks ) : provides block level access to storage resources.
+-- the client manages the its allocated space on storage system as if it was a local hard disk
+-- the file system management resides with the client.
+-- gives highest control over storage devices, very low level access.
+-- SAN has traditionally got a seperate dedicated storage network infra.
+
+Boot from SAN : 
+You can boot your OS from a SAN, having no hard drive at the local server, all the bootable files are stored in the SAN.
+no storage is reuired at all, without local storage you can bootup, this creates diskless servers.
+There can be boot from SAN, but not NAS, it not possible.
+
+NAS protocols:
+-- CIFS ( common internet filesystem) / SMB (server message block)
+-- NFS (network file system)
+
+SAN protocols:
+-- FC ( fibre channel) -- runs over fibre
+-- iSCSI (internet small computer storage interface) -- runs over eternet
+-- FCoE ( Fibre channel over Ethernet) -- runs over eternet
+-- NVMeOF ( non volatile memory express over fabric)
+
+Unified Storage:
+Modern infra supports both SAN and NAS.
+
+NAS and its protocols:
+SMB -- by IBM
+CIFS -- by microsoft's version of SMB.
+SMB is used more today's systems more, but both are almost same.
+
+CIFS was developed by microsoft for windows based devices.
+samba allows unix based clients to access CIFS shares.
+Servers -- share, clients "use" or "map" the share.
+
+NFS: network file system.
+Commonly used by VMFS datastores in VMware ( these can also use SAN )
+developed SUN microsystems, for unix based clients.
+Windows based systems can also use NFS, here servers exports and clients mounts.
+
+SAN Protocols:
+Terminology:
+
+1] LUN ( logical unit number ) -- it represents a disk which is going to be presented to the host.
+2] LUN are specific to SAN and not at all to NAS.
+3] The client team is known as initiator
+4] The storage team is known as target.
+
+Fibre channel:
+-- Fibre channel is the original SAN protocol and is still very popular.
+-- its uses dedicated switches, adapter and cables and is different than ethernet and all other other layer of OSI model.
+-- Its uses Fibre channel protocol (FCP) to send SCSI commands over the fibre channel network.
+-- its a very stable and reliable protocol.
+-- Its a lossless, unlike TCP and UDP.
+-- it supports bandwidth upto 1, 2, 4, 8,16,32 and 128 GB
+
+remember :
+WWN
+WWNN
+WWPN
+HBA: Host Bus Adapter is like NIC, its responsible for data transfer.
+
+Zoning
+LUN masking : helps in masking the server, and prevents it from reaching the wrong host and getting corrupted.
+LUN masking is done, to lock the right host to right LUN.
+
+iSCSI -- runs over ethernet
+
+Object Storage:
+Different than NAS / SAN
+Mostly used by cloud.
+-- block storage
+-- file storage
+
+======================================================================= Virtualization =========================================================================
+
+Virtualization : creating VM on a already present hardware.
+
+host : a physical server which has RAM, memory, storage interface, network interface, plain device, nothing on top of it.
+hypervisor : this is installed on the plain host, its like a agent, which manages how much storage, RAM, memory, network bandwidth is to be given to each VM on the shared infra
+exsi -- is by VMware
+VM : virtual machine's is being created on the hypervisor, multiple VM's can be created upon hypervisor and each VM has its own Operating system.
+
+Types of hypervisor:
+
+1. Baremetal hypervisor, TYPE 1 hypervisor : its created/installed on the plain hardware server, and it takes ownership of the hardware, there is no undrlying OS below this.
+eg : VMware Exsi, citrix, microsoft Hyper-v.
+
+2. TYPE 2 hypervisor : hypervisor is installed/running on your local system, its installed on an already existing OS, it works on that OS, and it creates multiple VM's on that.
+eg : VMware workstation, parallel for MAC, VMware playstation.
+
+Hypervisor is the platform on which the VM's run.
+
+Food groups:
+1. CPU -- the hypervisor allocates vCPU to each VM, each VM requires specific vCPU cores, which had to be bought, after buying its allocated from physical CPU and is converted to vCPU and allocated further.
+
+2. Memory -- the host's physcial memory is being shared among the guest VM's, sometimes the multiple guest VM's can share same memory, not at the same time, but when free.
+          -- you can also reserve the memory for your own paticular VM.
+		  -- the hypervisor smartly allocates host memory accross guest VM's
+
+3. Network -- every VM has its own vNIC's presented to it as physcial NIC
+		   -- virtual switch is present on each hypervisor, in case if the internal VM's want to connect and a virtual switch is connected pNIC to connect to actual switch
+		      to connect to internet.
+
+4. Storage -- vSCSI is given to each VM, 
+           -- scsi commands from VM are passed to hypervisor and then passed through storage adapters to storage area.
+		   -- decoupling is used for mobility as there is no direct contact between storage and VM's its only through hypervisor, which allows to for VM migration.
+		   
+Benifits of virtulization:
+1. consolidation
+2. Flexibility
+
+Live state : refers to the VM's running condition, capturing its memory, CPU activity, network traffic, and storage usage as it executes on the host machine.
+
+vMotion -- live migration of the VM's from one to other host without having any downtime, can be used for many reasons, like hypervisor upgrade and reboot, all the storage,
+network and vNIC are also same on the other host no changes at all.
+
+cluster -- groups multiple hosts together makes a cluster.
+Load balancing -- VM's from one host can be shifted / migrated temporarily or permanently to balance load on host, VM's can be shifted to any host inside the cluster.
+memory bit map -- during the migration of server from one host to other the changing memory is written in bit map and is transferred accross the other host, this makes
+                migration faster.
+
+Convert a pServer into a VM:
+ products -- VMware -- vCenter converter
+          -- microsoft -- VM converter.
+		  -- veeam -- disk to VHD
+Right sizing VM's is important.
+do not over provision
+

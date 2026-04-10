@@ -1,0 +1,576 @@
+GCP concepts:
+
+networking:
+1. NAT
+2. VPC
+Subnets
+firewall
+routes
+vpc peering
+private google access
+Identity-Aware Proxy (IAP) tunnel
+
+Instances:
+image, disks, snapshots, custom instance, predefined instances
+
+
+google cloud directory sync -- thrid party identity providers, except for google account, like ldap or microsoft AD.
+
+organisation
+folder -- just to group more folder/projects inside a folder and then delegate permission, so it will be easy to manage many projects at once
+project
+gcp resources
+
+-- in the above order all the permission will flow down.
+-- less restrictive permissions will take precedence before more restrictive one's
+
+principal -- can be a mail id(person), google group, service mail/account or any one part of google identity or workspace. -- who can do what
+roles/permissions/policies -- are what a person/account/principal can do 
+
+access/deny policy for resources -- deny takes precedence before allow
+
+user directory 
+SSO is provided
+without gmail also you can create account.
+
+Service account -- 3 types -- custom, default created per project, API access service account
+scopes -- access scope
+service account user role
+organisation restrictions -- emp can only access specific/required organisation/project/resources and ntg much decicded by google admin and egress proxy admin,
+-- they can allow access to other organisation bucket but not anything else
+
+Db and storage:
+-- object -- cloud storage
+-- file -- filestore
+sql
+nosql
+cache/memory
+data warehouse / data processing
+
+objects -- are immutable, has versioning enabled.
+soft delete -- if you delete a object it will be stored for a while, so you can retrive it.
+object lifecycle management
+data import services
+
+types of object storage:
+standard -- more frequent
+nearline -- less than 30 days 
+coldline -- les than 90 days 
+archive -- use if you will access data less than 1 year
+
+autoclass -- based on access patterns, it will automatically move to object storage
+
+.boto file in command line to supply encryption key
+
+Database:
+cloudsql -- mssql, postgresql, MS sql
+spanner -- for horizonal scaling
+alloyDB -- google's own full managed Db
+Firestore -- google's own non-sql DB.
+bigtable -- google's own ig data DB	
+memory store -- redis like -- gcp service
+
+
+Billing and resource management:
+
+Permissions are passwd down the order of herirechy, more permissive role is taken down to the resource from organisation -- in case of allow policy.
+in case of deny policy -- the resource level/ project level deny permission will take precedence.
+
+Each resource is billed and reported against a project and each project is part of billing account.
+In one organisation there can be many billing accounts.
+
+Organisation node -- root node of all GCP resources
+
+Organisation admin -- top level
+project creator -- access given by organisation admin to create and manage projects
+
+Project ID, Name, and Project number -- you can identity a project by these 3 identifiers
+
+From a physical resource standpoint:
+1. Global
+2. Regional
+3. Zonal
+
+Global -- Images, snapshots, networks.
+Regional -- external-ip
+Zones -- Instances and disks
+
+Quotas and limitation on resources per project:
+you can create 15 VPC/project -- can be increased on request.
+5 admin action[api calls]/second -- API rate limiting.
+24 cpu per region/project -- region limit can be increased
+
+Why Quota:
+-- prevent accidental creation of to many resorces by automation of cloud SDK.
+-- prevent billing spike and suprises.
+-- forces sizing consideration and periodic review
+
+Labels:
+-- utility for organizing GCP resources.
+-- cane be set, created, utilized from console, API and gcloud.
+
+-- you can set label for instances, images, snapshot, disks
+can be used for management, grouping and bulk single task operation uses.
+upto 64 labels can be added to one resource
+user defined for specific purpose
+propagated through billing
+
+Budgets:
+budget alering and setting up budget and receiving alerts based on pre-defined metrics.
+mail alerting or pub-sub alerting, and integrating pub-sub to budget alerts and reduce the spends by using cloud function/cloud run triggered by PUB-SUB event.
+
+Labels -- can be helped to group resources and anluze the spend on the resource
+
+-- looker studio -- visualize your data of billing 
+
+Monitoring and logging:
+Google cloud observability.
+-- monitoring, logging, error reporting, trace, Profiler.
+ops agent -- metric collector inside VM.
+
+
+Network Peering:
+-- Classic VPN
+-- HA VPN -- regional service, and its limited to one VPC
+
+Cloud Interconnect: -- layer 2 -- transport layer, access to private IP
+-- layer2 vs layer3
+-- dedicated vs shared 
+-- direct interconnect -- cloud to on-prem with routing facility in google's location
+-- shared interconnect -- isp partner will help interconnect on-prem network to cloud, physical network connection required.
+-- cloud interconnect -- cloud to cloud interconnect, routers, bgp and many more required.
+-- VPN -- also present -- just very less throughput 
+
+Peering: access to only public IP of google
+-- same as interconnect but instead of dedicated direct cables, hardware and network component, it uses google's infra and all.
+-- peering is limited to within cloud, i.e; vpc to vpc only, and not on-prem to cloud like interconnect.
+-- peering uses cloud-providers network backbone and does not need any special network components setup except for routers
+
+direct peering: used to access Google api and workspace and not the VPC, uses BGP and happens at one goole's edge location.
+carrier peering : uses ISP to connect to google's apps and services
+NO SLA for peering -- layer 3 - network layer 
+
+VPC:
+
+Shared VPC: within organisation and cannot be done within project, 
+one VPC created in one project(host project) can be used by different eligible project.
+1 vpc can be used by different/other projets.
+eligible resources from other projects can use IP's
+
+host project -- the project whose vpc is being shared
+service project -- the project which is using shared VPC.
+standalone project -- no participating this shared VPC thing
+
+VPC peering: inter-organisation, within the same project also can be done
+connect two vpc networks -- they may or may not be in same project, or can be in different organisation itself.
+both side network admin should peer the VPC on both end.
+
+
+Load Balancers:
+-- application load balancer -- layer7, content based, http header based, SSL, TLS, session termination, http traffic
+-- network load balancer -- based on ports and Ip address, tcp, udp load balancing, health checks
+  -- passthrough
+  -- Proxy
+  
+Autoscaling:
+-- managed instance group ( MIG )
+-- add/remove instances based on increase/decrease of metrics/load.
+metrics would be : cpu, load balancing capacity, monitoring metrics, queue based workload, schedule-based
+-- stateful IP addresses.
+
+Application load balancer:
+-- external load balancer
+-- health checks
+session affinity
+https
+
+Cross-region load balancing
+content based load balancing
+
+CDN -- content delivery network.
+1. cache miss -- if content is request from cloud CDN and its not there.
+-- in this case cache will get the data from nearby cache, if not there, tn it will attempt it from application load balancer.
+every cache-hit or cache-miss is recorded in logs.
+
+Cache modes: -- what type of content will be cached.
+1. USE_ORIGIN_HEADERS -- type of api's with specific headers will only be cached.
+2. CACHE_ALL_STATIC -- cache's all static data.
+3. FORCE_CACHE_ALL -- cache all the data irrespective of origin's ask.
+-- do not cache per user specific contents and dynamic contents, which change very often.
+
+Network load balancer:
+-- handles tcp traffic
+
+Proxy and pass-through load balancers differ primarily in how they handle connections: 
+-- proxy load balancers terminate client connections and create new ones to backends (offering high intelligence/security), 
+-- pass-through load balancers (L4) directly forward packets to backends, preserving client IP addresses for maximum performance.
+   -- direct server return is done in pass through, packets from server side do not go to load balancer again, they go to client directly.
+   
+Internal load balancer is a regional resource
+
+-- load balancer's can be categorised as:
+1. application
+  -- regional
+  -- global
+  -- external
+  -- internal
+  -- public facing or internal 
+  -- http and https
+  -- layer 7 -- application, intelligent routing based on content type or url header
+  -- routes based on header, path, host and query strings
+  -- Use ALB for web applications, microservices, and API routing
+  -- uses DNS for routing
+2. network load balancer:
+  -- internal are always regional -- within VPC, private IP
+  -- multi-regional
+  -- pass through
+  -- proxy -- best for SSL offloading
+  -- external and internal LB.
+  -- tcp, udp, imcp, TLS, SSL
+  -- layer 4, transport, high speed, low latency
+  -- SSL, TLS offloading
+  -- routing based on ports and IP.
+  -- uses static IP per zone for data transfer
+  -- Use NLB for gaming, real-time streaming, IoT, and high-throughput requirements
+-- you can combine both type of load balancer to support 3-teir services
+
+
+IAC : Infrastructure as code
+-- there are many tools for provisioning infra using a code.
+google supports : terraform, ansible, puppet, packer and chef
+
+Google Cloud Marketplace:
+-- deploy already prepared software to the cloud
+-- BYOL available
+-- 
+
+
+SLI,SLO, SLA:
+
+SLI: Service level indicators, or SLIs, are carefully selected monitoring metrics that measure one aspect of a service's reliability.
+
+-- it is expressed as the ratio of two numbers: the number of good events divided by the count of all valid events.
+-- Service Level Indicators (SLIs) measure the actual performance of a service (e.g., latency, uptime)
+-- SLIs provide the raw data ("we are 99.9% available"),
+
+SLO: Service level objective
+-- while Service Level Objectives (SLOs) are the internal, targeted benchmarks for those metrics
+-- SLOs define the acceptable range ("we aim for 99.95% availability") to manage error budgets.
+-- SLOs define the goal for service reliability.
+-- eg: 99.9% of HTTP requests must be successful over a 30-day period.
+-- SLO, combines a service level indicator with a target reliability.
+-- SLOs that are S.M.A.R.T. SLOs should be specific.
+-- S,M,A,R,T -- Specific, Measureable, Achievable, Relevant, Time Bound.
+
+SLA: Service Level Agreement
+-- which are commitments made to your customers that your systems and applications will have only a certain amount of “down time.”
+-- SLA describes the minimum levels of service that you promise to provide to your customers and what happens when you break that promise.
+
+Alerting Policy:
+Cloud Build and artifact registry:
+Cloud build
+
+IAC : Infrastructure as code
+
+-- there are many tools for provisioning infra using a code.
+google supports : terraform, ansible, puppet, packer and chef
+
+Google Cloud Marketplace:
+-- deploy already prepared software to the cloud
+-- BYOL available
+
+Managed service -- its between PAAS and SAAS
+-- big query
+-- data flow -- transforming and processing
+-- dataprep -- visualize, explore, clean, prepare data for analysis
+-- dataproc -- to run apache hadoop and spark
+
+Monitoring, Logging and Observability: part of the Operations Suite, provide complementary observability
+
+-- Product needs:
+1. Continous Improvement.
+2. Dashboards
+3. Automated alerts
+4. Incident Response.
+
+Four Golden Signals to measure system performance:
+1. Latency
+2. Traffic
+3. Saturation
+4. Errors
+
+Tools offered by GCP:
+Cloud Monitoring -- realtime system info about eeverything happening and creates dashboard, reports and many such things, 100+ resources monitored and 1500 diff metrics available without any cost.
+Cloud Logging
+Error reporting
+Cloud Trace
+Cloud Profiler
+
+
+Cloud Monitoring:
+-- open source standards -- prometeus and open telemetry
+-- coustomization for free workloads, visuals
+-- in context visualiztions
+-- many free metrics
+-- Cloud Monitoring provides visibility into the performance, uptime, and overall health of cloud-powered applications.
+-- It collects metrics, events, and metadata from projects, logs, services, systems, agents, custom code, and various common application components, 
+including Cassandra, Nginx, Apache Web Server, Elasticsearch, and many others.
+-- these metrics can used to visaulize, create dashboards, reports and such things
+-- Monitoring focuses on proactive, numeric metrics (e.g., CPU, uptime) to alert on performance issues via dashboards.
+-- Focuses on metrics (numerical data like CPU usage, memory, disk I/O, error rates, request counts).
+-- When you use it: Right now. It provides dashboards and active alerting (e.g., alert me if CPU is >80% right now).
+-- To monitor the health and performance of your system in real time and trigger alerts.
+-- Date Type: Metrics (Numbers/Time-Series)
+-- metric explorer
+
+Clodu Logging:
+-- Monitoring focuses on proactive, numeric metrics (e.g., CPU, uptime) to alert on performance issues via dashboards, while Logging records textual, 
+historical event data (logs) for post-event troubleshooting and forensic analysis
+-- Collects and stores log entries (records of events, errors, or activities) from your applications and infrastructure.
+-- When you use it: Usually after an event. You look at logs (e.g., using Logs Explorer) to diagnose why an error happened.
+-- Purpose: To analyze, troubleshoot, and keep a historical audit trail
+-- Data Type : Events (Log entries/Text)
+-- It leverages tools like Log Analytics to view trends, or Error Reporting and Log Explorer to quickly examine problems.
+-- logging has multiple aspects such as collection, analysis, export and retention.
+
+collect:
+-- You can aggregate and centralize logs at a organizational level, project level and folder level based on your needs.
+
+Analyze:
+-- Most log analysis start with Google Cloud’s integrated Logs Explorer.
+-- You can run queries and analyze log data with Log Analytics.
+
+Export:
+-- Export log data as files to Google Cloud Storage, or as messages through Pub/Sub, or into BigQuery tables.
+-- BigQuery allows analysts to examine logging data through SQL queries.
+-- Pub/Sub messages can be analyzed in near-real time using custom code or stream processing technologies like Dataflow.
+
+Retention:
+-- Data access logs are retained by default for 30 days, but this is configurable up to a max of 3650 days.
+-- Admin logs are stored by default for 400 days.
+
+
+
+Error Reporting:
+
+-- Error Reporting counts, analyzes, and aggregates the crashes in your running cloud services.r
+-- Error reporting enables you to perform a lot of advanced functionalitiesr
+-- These include: Real time processing: Application errors are processed and displayed in the interface within seconds.r
+-- You can quickly view and understand errors as a dedicated page displays the details of the error.r
+-- Error Reporting is always watching your service and instantly alerts you when a new application error cannot be grouped with existing ones.r
+
+
+Cloud Trace:
+
+-- all about latencyr
+-- a tool that acts like a "speed camera" for your application, measuring exactly how long requests take to travel through different services. 
+It records the entire journey of a request across microservices, identifying exactly where delays (latency) or errors occur to help developers fix slow performance. 
+-- Cloud Trace stitches these spans together to create a visual timeline (a trace) of the request's journey.
+-- Trace can capture traces from applications deployed on App Engine, Compute Engine VMs, and Google Kubernetes Engine containers.
+
+Cloud Profiler:
+-- works as a statistical, low-overhead tool that uses language-specific agents to periodically collect performance data (like CPU and memory usage) from your production applications
+ and send it to the Google Cloud console for analysis. It is designed to have a negligible performance impact.
+-- Cloud Profiler changes this by using statistical techniques and extremely low-impact instrumentation that runs across all production
+application instances to provide a complete CPU and heap picture of an application without slowing it down.
+-- Cloud Profiler presents the call hierarchy and resource consumption of the relevant function in an interactive flame graph that
+helps developers understand which paths consume the most resources and the different ways in which their code is actually called.
+-- Profiler analyzes resource consumption (CPU/memory) -- does not record logs, realtime thing.
+
+Cloud Monitoring Architecture:
+
+1. Metric Collection
+2. Metric Storage
+3. Visualization and Analysis
+
+Monitoring/metric data type: Time series
+Time-series consists of:
+metric -- kind of metric which is collected
+resource -- from which resource the metric was collected complete info.
+metrickind -- wht kind of metric is it, Eg: DELTA.
+valueType -- wht is it eg: integer, string, bool, etc...
+points -- Array of time stamp and value of the metric
+
+Dashboards: build charts
+PromQL : Prometeus Query Language -- You can use PromQL to query over 1,500+ free Google Cloud system metrics (like Compute Engine CPU or GKE memory) 
+alongside your own custom Prometheus metrics.
+Uptime check: You can create a uptime check with diff metrics for diff resources
+Managed service -- its between PAAS and SAAS
+-- big query
+-- data flow -- transforming and processing
+-- dataprep -- visualize, explore, clean, prepare data for analysis
+-- dataproc -- to run apache hadoop and spark
+
+Cloud Run:
+
+App engine -- best for web apps, direct code is deployed without converting to container
+
+Cloud Run: 
+-- code is converted to containers
+-- code can be written in any language.
+-- serverless, runs on gcp infra utilizing many other gcp services.
+-- write code and build images on it.
+-- Cloud Run works well with other services on Google Cloud. You can build full-featured 
+applications without spending too much time operating, configuring, and scaling your 
+
+Cloud Run service.
+
+-- cloud run service can run continously as a service or can run as a job for sometime and exit.
+-- both of these run in same environment, and use same integrations
+-- it just depends on use case or task's need.
+-- Cloud Run services are used to run code that responds to web requests, or events.
+-- Cloud Run jobs are used to run code that performs work (a job) and quits when the work is done
+
+cloud run service :
+-- provides http/https support, handles TLS load and offloading so safe data can reach to the conatiners
+-- HTTPS endpoint to support HTTPS requests.The endpoint is on a unique subdomain of the *.run.app domain.
+
+Cloud run jobs:
+-- code for jobs, one time use or independent scheduled runs.
+-- you can schedule the job, make it recurring, or run it/call it as part of a workflow.
+-- A job can start a single container instance or multiple container instances to run your 
+application code or job script. With multiple container instances running in parallel, 
+-- the job can complete the task faster. Jobs that run multiple identical container instances are known as Array jobs.
+-- For your service or job to be deployable to Cloud Run, you must package it in a container image. 
+-- autoscaling based on job load, built-in traffic management, serverless, CI/CD.
+-- cloud run can public or internal
+-- Pay-per-use pricing for services.
+
+cloud scheduler == cron job
+cloud tasks
+eventarc
+
+Send HTTPS requests to trigger a Cloud Run service.
+-- Use gRPC to connect Cloud Run services with other services.
+-- With WebSockets
+-- Push messages from Pub/Sub
+-- Use Cloud Scheduler to run a Cloud Run service on a schedule.
+-- Use Cloud Tasks
+-- Trigger a Cloud Run service with events from Eventarc.
+-- Your container-based application handles web requests.
+-- Cloud Run is regional service which runs in multizonal, for redundancy.Create  more services in more regions
+-- The main resource in Cloud Run is a service. and not cloud run job.
+-- service revisions can be made, but are immutable
+--  A revision consists of a specific container image, along with environment settings such as environment variables, memory limits, or concurrency value.
+-- A container instance handles requests to a service revision.
+
+
+Container lifecycle on cloud run:
+starting --> serving request --> idle --> shutting down --> stopped
+-- Cloud Run keeps a copy of your container image to start containers quickly, first pull is always from artifact registry
+-- Cloud Run forwards requests to your application when it listens on TCP connections.
+-- Application crashes and memory limits stop a container forcefully.
+-- ideal instances are not billed, idle instances use 0 cpu
+
+AutoScaling:
+-- cold start
+-- scale to zero
+-- by default max instance per service are 1000, this can changed upon request
+-- minimum is zero, but can be changed to keep minimum number of instances running to serve traffic and avoid cold start
+-- ideal instances are kept warm so they can serve traffic rightaway wihout delay and more instances will be created upon more traffic.
+-- Requests queue temporarily if there’s no container available to handle the request.
+-- there is a inhouse load-balncer which balances load
+-- You can control CPU, memory usage, and related costs by setting the concurrency 
+configuration to allow a container instance to process multiple requests at the same time
+
+
+Access Management
+-- Identity and Access Management (IAM) is a Google Cloud service that lets you create and manage permissions for Google Cloud resources
+-- IAM verifies the identity of the caller, and checks if it has permissions to perform the  API call. If that check fails, it rejects the call.
+-- To authorize API calls, IAM uses policies that are attached to resources
+-- Configure ingress network settings to make a Cloud Run service public or internal
+-- To connect a Cloud Run service or job directly to your VPC network to access VM
+instances, Memorystore instances, and other resources with an internal IP address, use Serverless VPC Acces
+
+
+IAM supports 3 types of identities
+1. Human identit
+2. Service account:  A service account does not have a password and can’t sign in using a browser,  service account is a special type
+of identity that is meant to be used by machines, It’s identified by its email address, which is unique to the account
+3. All Users --  A special identifier to allow everyone or allow public access to a service on Google Cloud.
+
+GCP evaluates access in this order:
+
+Org Policies → can explicitly DENY
+IAM Policies → can only ALLOW
+Resource-level IAM → refine allows, NOT overrides denies, refine = add, never subtract.  Lower-level can add but not remove
+
+
+**********************But Org Policy ≠ IAM.*****************************
+
+Org Policy is a different system, evaluated first, designed for administrators to enforce global restrictions.
+
+Cloud run :
+-- has secret manager, which stores passwd's, api keys, and such sensitive info and this can be passed as variable or mounted as vloume so the container code inside can use this.
+-- you have to pass it while deploying in CLI.
+-- it also allows os-level means container level variables to be set,
+-- build packs --> used to containerize code
+-- Cloud Run accepts container images in the Docker Image Manifest V2, Schema 1, Schema 2, and OCI image formats.
+-- Cloud Code is a set of plugins for popular IDEs that make it easier to create, deploy, and integrate your applications with Google Cloud.
+-- Test the app locally with the Cloud Run emulator
+
+
+gcloud <command> --help -- in need of help
+
+The Gcloud "Sentence"
+gcloud <group> <sub-group> <action> <resource_name> --<flag>=<value>
+gcloud compute instances create my-vm --zone=us-central1-a
+
+[Tool] [Service] [Resource] [Action] --[Flags]
+Tool: Always gcloud.
+Service (Group): The GCP service (e.g., compute, container, storage).
+Resource (Subgroup): The specific item within that service (e.g., instances, clusters, buckets).
+Action: What you want to do (e.g., create, list, describe, delete).
+Flags: Key-value pairs that modify the command (e.g., --project, --zone, --format).
+
+Category ----------  Command Path ----------  What it actually changes,Note for your files
+Account ----------  gcloud auth ... ----------  Who you are. Login credentials and tokens.,Affects ~/.config/gcloud/credentials
+Config ----------  gcloud config ... ----------  "Where you are. Sets default project, region, and zone.",Affects local CLI behavior only.
+Resource ----------  gcloud [service] ... ----------  What exists. Creates/Deletes real infra in the cloud.,Costs money/Changes live environment.
+
+Identity & Setup
+gcloud init — (The "Fix-it" tool) Re-initializes auth and config.
+gcloud auth login — Standard browser login.
+gcloud auth list — Shows all logged-in accounts; the one with the * is active.
+gcloud config set project [PROJECT_ID] — Most important config command.
+gcloud config list — Displays your current project/account/zone defaults.
+
+
+Storage (The gs:// Rule)
+gsutil [Options] [Command] [Source_URL] [Dest_URL] -- skeleton
+Key Detail: Cloud paths always start with gs://.
+
+gsutil mb gs://[BUCKET_NAME] — Create bucket.
+gsutil cp [LOCAL_FILE] gs://[BUCKET_NAME] — Upload.
+gsutil cp gs://[BUCKET]/[FILE] . — Download (the . is local destination).
+gsutil rm -r gs://[BUCKET] — Delete bucket and all contents.
+gsutil mb -l us-east1 gs://my-unique-bucket-name
+gsutil cp photo.jpg gs://my-bucket/photos/
+gsutil -m rsync -r ./local_dir gs://my-bucket/backup
+
+BigQuery (The Data Rule)
+bq mk [DATASET_ID] — Create a dataset.
+bq query --use_legacy_sql=false 'SELECT ...' — Standard SQL query.
+bq ls -a — List all datasets in all projects you have access to.
+
+4. The "Expert" Flags (Missing these causes errors)
+These work across almost all gcloud commands:
+Filtering: --filter="name=my-vm" (Server-side search).
+Formatting: --format="table(name, status)" or --format=json.
+Targeting: --project=[ID] (Overrides your config setting for a one-off command).
+Automation: --quiet (Suppresses "Are you sure?" prompts).
+
+eg:
+
+gcloud compute instances [create|delete|list|stop]
+gcloud container clusters [create|list|upgrade]
+gcloud sql instances [patch|restart|list]
+
+gcloud compute instances start [NAME]
+gcloud container clusters list
+gcloud iam service-accounts create [NAME]
+
+gcloud config set project [ID] — Sets default project.
+gcloud config set compute/region us-central1 — Sets default region.
+gcloud config list — See current active settings.
+gcloud config configurations create [NAME] — Create a separate profile (e.g., prod vs dev).

@@ -1,0 +1,75 @@
+Scripts:
+
+Contain series of commands
+An interpreter executes commands in the script
+Anything u can type in the command line, put in a script
+Great for automatic task
+ 
+Script does not contain shebang in the command are executed using your shell
+Different shells have slightly varying syntex
+ 
+Variables
+Syntex : VARIABLE_NAME="Value"
+Case sensitive
+ 
+File operators
+-d : file is a dir
+-e : file exits
+-f : file exits in a regular file
+-r : file is readable by you
+-s : file exits is not empty
+-w : file is writable by you
+-x : file is executable by you
+-z string : is empty
+-n string : is not empty
+ 
+Arithmetic operations
+Arg1 -eq ag2
+ 
+If condition                 
+If ["  "]
+Then
+Echo "  "
+Fi
+ 
+For loop
+For VARIABLE_NAME in ITEM_1 ITEM_2
+Do
+command1
+Command 2
+done
+ 
+Exit status/return code
+0 = 0 Success
+Other than 0 = error
+Use man r info to find meaning of exit status
+ 
+$? - contains the previously executed code
+ 
+Wildcards
+* - Matches 0 r more characters
+*.txt
+A*
+a*.txt
+? - matches exactly one character
+?.txt
+a?
+a?.txt
+[] - character class
+[!] - matches any one of the characters NOT
+Ranges characters
+[a-g]*
+[3-6]*
+Named characters classes
+[[:alpha:]], alnum, digit, lower, upper, space,
+\ - escape character
+? - represents the single character
+ 
+Debugging
+-x -- prints commands as they execute
+Set +x to stop debugging
+-e -- exit an error
+-v -- prints shell input lines as they are read
+Help set | less
+ 
+Sed - stream editor

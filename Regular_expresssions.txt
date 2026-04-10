@@ -1,0 +1,61 @@
+🔤 Basic Characters
+
+Symbol	Meaning
+.	Any single character except newline
+\	Escape character (e.g., \. matches a literal dot)
+^	Start of a line
+$	End of a line
+[]	Match any one character inside the brackets
+[^]	Match any one character not inside the brackets
+
+
+🔁 Quantifiers
+Symbol	Meaning
+*	0 or more times
++	1 or more times
+?	0 or 1 time
+{n}	Exactly n times
+{n,}	n or more times
+{n,m}	Between n and m times
+🔗 Grouping and Alternation
+Symbol	Meaning
+()	Group expressions
+
+
+🔤 Character Classes
+Pattern	Matches
+[abc]	a, b, or c
+[a-z]	Any lowercase letter
+[A-Z]	Any uppercase letter
+[0-9]	Any digit
+[^0-9]	Any non-digit
+.	Any character except newline
+
+
+🔣 Predefined Character Classes (POSIX)
+Pattern	Meaning
+[:alnum:]	Alphanumeric characters
+[:alpha:]	Alphabetic characters
+[:digit:]	Digits
+[:lower:]	Lowercase letters
+[:upper:]	Uppercase letters
+[:space:]	Whitespace (space, tab, newline)
+[:punct:]	Punctuation characters
+
+
+Use them like this:
+
+
+🧪 Examples
+Match lines starting with "Error":
+
+grep -E '^Error' file.txt
+
+Match lines ending with ".log":
+
+grep -E '\.log$' file.txt
+
+Match phone numbers like 123-456-7890:
+
+grep -E '[0-9]{3}-[0-9]{3}-[0-9]{4}' file.txt
+

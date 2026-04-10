@@ -1,0 +1,73 @@
+---------------------------------------------AIX COMMANDS----------------
+
+How to check cortex status in the server:
+systemctl status traps_pmd.service
+
+The location of cortex or cytool
+/opt/traps/bin
+
+==========================================================================================================================================
+
+Location of Autosys tool:
+/etc/init.d or cd /etc/rc.d 
+check status here ./waagetn….. status and if required start
+
+same in ontdc server:
+cd /sbin/init.d
+./waae_agent-AGENT restart
+ 
+./waae_agent-AGENT status
+
+==========================================================================================================================================
+
+Location of monitoring/patrol agent:
+
+su - pmona00
+
+cd /base_app/BMC/Patrol3/scripts.d
+
+./S50PatrolAgent.sh restart
+
+=============================================================================================================================================
+
+Networker status/restart:
+
+systemctl status networker
+ps -ef | grep -i nsr
+/sbin/init.d/networker start -- aix/ontdcd
+
+NFS issue:
+
+To check the NFS mounts, view fstab file : cat /etc/fstab
+
+lahehrlst02:/sapmnt/HST/profile         /sapmnt/HST/profile     nfs vers=3,rw,soft,intr      1 2
+lahehrlst02:/sapmnt/HST/global          /sapmnt/HST/global      nfs  vers=3,rw,soft,intr     1 2
+
+The above data will be present on the fstab file, lahehrlst02:/sapmnt/HST/global -- source from where the data is coming, remote server, nfs server
+/sapmnt/HST/global -- the mount point present on our local server, nfs client.
+
+systemctl status nfs-server -- to check if the nfs service working properly.
+then
+systemctl restart nfs-server -- if issue found.
+
+if not go the server which is exporting:
+
+check if the nfs services are running, if not restart.
+check : cat /etc/exports
+
+and now come to local server:
+
+DO:
+
+umount -l /sapmnt/HST/profile -- lazy mount the FS having the issue.
+
+then
+if needed : systemctl restart nfs-server
+and then at last :
+
+mount -t nfs -o nfsvers=3 lahehrlst02:/sapmnt/HST/global /sapmnt/HST/global
+
+mount -a --> this reads the fstab file and it does what ever is written in it.
+lsblk -f -- to get the UUID of the device/disk to mount to the device.
+ls -lZ -- to know the SElinux, format
+

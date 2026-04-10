@@ -1,0 +1,4 @@
+ps -eo pid,ppid,state,cmd | grep defunct -- to list all the zombie process, the state will have "Z" in them.
+
+ 
+

@@ -1,0 +1,84 @@
+Installing Ansible:
+
+1. First update the OS and make it upto date.
+sudo apt update
+
+2. Install Ansible
+apt install ansible
+
+Adhoc command:
+
+---------------------------------------to test whether we are able to login to all server using personal creds:
+
+ansible all -i inventory.ini -m ping -u <user-name> --ask-pass
+
+---------------------------------------In case of multiple hosts and prefer passwd based authentication:
+
+ansible all -i inventory.ini -m ping -u <user-name> --ask-pass -f 20 --timeout=10 -e 'ansible_ssh_common_args="-o ConnectTimeout=10 -o PreferredAuthentications=password -o GSSAPIAuthentication=no"'
+
+-f <number> => fork the number of host meaning ansible will try to access 20 machines at once.
+--timeout=<number> => if the host does not connect/command is not executed in given time then break connection and mark the host as failed.
+-e => extra-variable
+'ansible_ssh_common_args => give extra argument to ansible which are related to ssh
+-o ConnectTimeout=10 => if ssh does not respond in 10 seconds close the connection
+-o PreferredAuthentications=password => first/preferably use passwd based authentication method
+-o GSSAPIAuthentication=no -- disbale/do not use GSSAPI based authentication
+
+---------------------------------------Incase of using key-based/passwdless authentication:
+
+ansible all -i inventory.ini -m ping
+
+---------------------------------------In case of multiple keys:
+
+ansible all --key-file <path_to_key> -i inventory.ini -m ping
+
+---------------------------------------To customize the user specific ansible operations
+create a ansible.cfg file in working directory/in user's home directory -- these two will take precedence before /etc/ansible/ansible.cfg
+
+-- add default values like private-key path, inventory and ansible will read this from here
+
+---------------------------------------To list all host and get count of hosts inside your inventory:
+
+ansible all --list-hosts
+
+---------------------------------------To gather facts about your servers
+
+ansible all -i inventory.ini -m gather_facts
+
+or for single host--------------------------
+
+ansible all -i inventory.ini -m gather_facts --limit=hostname
+
+ansible all -i inventory.ini -m gather_facts --limit=hostname | grep -i "ansible-distribution" -- to get the distro info
+
+-----------------------------------become root user and execute adhoc commands
+
+ansible all -i inventory.ini -m apt -a update_cache=true -u ablnu --ask-pass --become --ask-become-pass
+
+--------------------------become other user in the server, ablnu must have permission to switch to that user
+
+ansible all -i inventory.ini -m apt -a "update_cache=true" -u ablnu --ask-pass --become --become-user <other_username> --ask-become-pass
+
+-- become => activates the sudo previlages
+-- you have to give sudo passwd and not that user passwd as root user can switch to any user without perm
+
+-------------------------giving multiple args to a module
+
+ansible all -i inventory.ini -m apt -a "name=snapd state=latest" -u ablnu --ask-pass --become --become-user <other_username> --ask-become-pass
+
+--------------------------------------------------------------------------------------------------
+
+Ansible's gather_facts mechanism, which uses the setup module to collect information about remote hosts, happens automatically before any playbook tasks by default, unless explicitly disabled.
+
+For ad-hoc commands, facts are not gathered automatically. To gather facts using an ad-hoc command, you must explicitly invoke the setup module.
+
+--------------------------------------------Pre_tasks---------
+---
+
+- hosts: all
+  become: true
+  pre_tasks:   ---> all the tasks defined below this are executed first, before any play. -- its a good to know
+  
+  - name:
+
+
