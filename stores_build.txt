@@ -69,13 +69,18 @@ then follow confluence:
 
 there is logic to write below commands,it's written in the page itself, refer personality sheet in CRQ for printer type and IP address.
 
-lpadmin -p 704 -v socket://10.148.219.31/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "Cash Office Printer"
 
-lpadmin -p netprtr1 -v socket://10.148.219.30/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_MP_C4502_PS.ppd.gz -E -L "Department Office printer"
 
-lpadmin -p netprtr2 -v socket://10.148.219.32/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_C430DN_PS.ppd.gz -E -L "Manager Office Printer"
+lpadmin -p 704 -v socket://10.88.51.31/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "Cash Office Printer"
 
-lpadmin -p netprtr3 -v socket://10.148.219.33/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "BDR Printer"
+lpadmin -p netprtr1 -v socket://10.88.51.30/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_MP_C4502_PS.ppd.gz -E -L "Department Office printer"
+
+lpadmin -p netprtr2 -v socket://10.88.51.32/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_C430DN_PS.ppd.gz -E -L "Manager Office Printer"
+
+lpadmin -p netprtr3 -v socket://10.88.51.33/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "BDR Printer"
+
+
+
 
 lpadmin -p netprtr4 -v socket://10.148.219.42/ -m foomatic-db-ppds/Ricoh/PS/Ricoh-Aficio_SP_5200DN_PS.ppd.gz -E -L "Click & Collect"
 
@@ -98,7 +103,7 @@ https://gitlab.lblw.ca/lt-stores/srestores/store-deploy/store-deploy-pipeline/-/
 
 
 Price reduce command:
-upc="4011" #change 1234
+upc="06038399517"
 echo "insert into storeinfo
 select item_upc_cd,'1',item_price_method,curr_split_qty,curr_pos_rtl_amt-0.01,today,today,'','','','','','','04',current,current,'67206'
 from isppm where item_upc_cd = '$upc'" | dbaccess boss
@@ -107,7 +112,7 @@ echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
 
 
 To verify the price change:
-upc="4011"
+upc="400168637223"
 echo "select a.item_upc_cd, a.item_desc,
 'HOST',a.item_price_method,a.curr_split_qty,a.curr_pos_rtl_amt,
 'STORE',b.item_price_method,b.curr_split_qty,b.curr_pos_rtl_amt
@@ -117,7 +122,7 @@ and b.main_upc = a.item_upc_cd" | dbaccess boss
 
 
 revert command:
-upc="4011" #change 1234
+upc="06038399517" #change 1234
 echo "delete from storeinfo where main_upc = '$upc'" | dbaccess boss
 #for POS/ESL sync
 echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
@@ -125,6 +130,8 @@ echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
 
 
 To verify the price change:
+
+
 upc="4011"
 echo "select a.item_upc_cd, a.item_desc,
 'HOST',a.item_price_method,a.curr_split_qty,a.curr_pos_rtl_amt,
@@ -132,5 +139,111 @@ echo "select a.item_upc_cd, a.item_desc,
 from isppm a, outer storeinfo b
 where a.item_upc_cd = '$upc'
 and b.main_upc = a.item_upc_cd" | dbaccess boss
+
+
+upc="06038399517"
+echo "select a.item_upc_cd, a.item_desc,
+'HOST',a.item_price_method,a.curr_split_qty,a.curr_pos_rtl_amt,
+'STORE',b.item_price_method,b.curr_split_qty,b.curr_pos_rtl_amt
+from isppm a, outer storeinfo b
+where a.item_upc_cd = '$upc'
+and b.main_upc = a.item_upc_cd" | dbaccess boss
+
+06672103041
+
+
+revert command:
+upc="06038399517"
+echo "delete from storeinfo where main_upc = '$upc'" | dbaccess boss
+#for POS/ESL sync
+echo "00000|S|PM|$upc" > /tmp/bsync.$upc.upc
+/x/isp/tman/bin/bsync -i /tmp/bsync.$upc.upc
+
+
+
+Linked in:
+
+Hi Sneha Reddy
+
+
+
+I just officially applied for the SRE role and wanted to introduce myself directly—looks like you have a solid infra army over there!
+
+I’d love to join your forces and make them impeccable. I’m an SRE bringing zero downtime, zero escalations, and zero headaches to anyone out there. Be it an unsolvable problem, overspending, or tight deadlines, I hit the ground running with my skills in GCP, K8s, Linux, Python, GitLab CI/CD, Ansible, custom scripting, and automation.
+
+With real-world problems conquered and proven mettle, I would love to work with you, as I really admire the work you do.
+
+I’ve attached my resume here so it doesn't drown in the large ocean of applications. I'd love to connect, be part of the team, and make your life easier by presenting a hero of a candidate directly to your inbox 😉
+
+Best,
+Abhishek
+
+
+https://www.linkedin.com/in/abhishek-gp/
+
+Application Reference: 19561996749122329533
+
+Site Reliability Engineer with nearly 2 years of experince troubleshooting and stabilizing distributed system based on Linux, GCP and k8s
+,automating repetative/boring and complex tasks using python, Bash and Ansible significantly reducing manual toil, built modular, fault isolated
+and self healing CI/CD pipelines and fast paced deployed by converting weeks  to hours work
+
+
+Secure Modular Microservices Architecture
+Tech Stack: Python, GitLab CI/CD, Kubernetes, GCP, GKE, Helm, Docker
+
+Deployed Python-based apps directly to cluster by just single commit. GitLab CI/CD handles the heavy work by automating Docker builds, zero-downtime Helm rollouts, and instant rollbacks if anything breaks.
+
+Killed static credentials/keys for good. Configured WIF, OIDC, and GCP Secret Manager for a setup-once-and-forget keyless setup, letting pods (GKE) and GitLab securely authenticate to GCP services without hardcoded keys.
+
+Built a resilient Kubernetes microservices setup. Routed external traffic through an API Gateway, used CoreDNS for smooth pod-to-pod communication, and set strict health and readiness checks to keep the app alive during deployments.
+
+Distributed UNIX Configuration Drift Sentinel
+Tech Stack: Python, gRPC, Protobuf, Linux (inotify), HTTP/2
+
+Killed 30-minute delays with a closed-loop gRPC architecture, achieving sub-50ms self-healing across the UNIX fleet by instantly reverting configuration drift.
+
+Hooked a Python daemon directly into the Linux kernel (inotify), dropping CPU usage to <1% by staying completely idle until critical files change.
+
+Replaced JSON polling with strict Protobuf messaging over persistent HTTP/2 streams, slashing network overhead by 80% and eliminating parsing errors.
+
+
+
+sre
+Archeitected modular intellegent, self healing pipelines do safely deploy 20+ services/upgardes over 2000+ servers with 90% success rate within time critical window
+
+Identified, optimized recurring app, infra breakges and fixed them using custom python and bash scripts which reduced incident count by 70%.
+
+Deployed cortex agent over the fleet of 500+ k8s nodes a daemonset and modified agent code such that the values changes based on configmaps, without rebuidling whole conatainer again
+
+Integrated best WIF and OIDC into pipelines and handled keyless sa for GCP provisiong, manged configurations with ansible and provisined and configured 150+ server into prod deployments, reducing the deployment time from 2 weeks to a day.
+
+
+
+linux
+Scripted Ansible, Python, and Bash automation to patch a 1,000+ Linux server fleet, reducing manual toil by 80% and saving 15
+hours per cycle
+
+Built custom monitoring scripts for 100+ legacy systems, automating CPU/memory/disk alerts and closing critical visibility blind spots, which improved visibility and reduced p1 incidenets as these were handled forehand
+
+Tuned 200+ production Linux hosts, partnering with network and app teams to resolve root-cause CPU, I/O, and filesystem
+bottleneck.
+
+
+projects:
+
+k8s project for no touch deployment 
+tech stack: k8s, helm, python, docker, gke, gcp, gitlab ci/cd
+
+Automated end-to-end application delivery using GitLab CI/CD, Docker, Helm, and Kubernetes, enabling one-click rollouts and rollbacks based on health and readiness probes failure.
+Integrated WIF and OIDC and secret manager in CI/CD workflows, for key less comm between gitlab and pods with GCP env, applied stric network policies within services and handled external traffic with api gateway and managed certs.
+
+
+gRPC based high speed replication engine:
+tech stack: networking, grpc, api, linux, python,
+
+Built a python daemon that streams large( 500Gb+) payloads accross GCP regions eliminating 33% serialization bloats by using Proto Buffs, which cut transfer time from 111 to 68 mins.
+
+Stremed raw binary chunks over single single http/2 connection via mTLS on port 443, leveraging multiplexing and buffer tracking to drop host cpu by 45% comparing to traditional ways, with automatich stream resumption if interupted
+
 
 

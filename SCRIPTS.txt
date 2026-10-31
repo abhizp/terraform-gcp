@@ -10,3 +10,23 @@ cp -rp /etc/shadow /etc/shadow-$(date +"%Y%m%d-%H%M%S")
 /bin/echo 'otel:GBr2dqW,+7U`"].' | /usr/sbin/chpasswd
 /usr/bin/chage -m -1 -M 99999 -I -1 -W 7 -E -1 otel
 chage -l otel
+
+GBr2dqW,+7U`"].
+
+usermod -a -G sysadmin,users,dialout,video otel
+/bin/chown  otel:sysadmin  /home/otel
+/bin/echo 'otel:GBr2dqW,+7U`"].' | /usr/sbin/chpasswd
+
+exec command:
+The exec command in Linux is a shell built-in used to replace the current shell process with a specified command. 
+Instead of launching a new child process (the normal behavior of Linux commands),
+exec completely overwrites the existing terminal or script process with the new program.
+
+
+exec [options] [command [arguments]] [redirection]
+
+eg: exec > output.log 2>&1
+
+If you use exec without a specific command, any file redirections you declare will apply to the entire remainder of the current shell session
+Any commands run after this line in your script or terminal will automatically write their standard output (stdout) and error logs (stderr) directly into output.log.
+

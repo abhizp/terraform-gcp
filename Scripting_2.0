@@ -71,5 +71,179 @@ Set +x to stop debugging
 -e -- exit an error
 -v -- prints shell input lines as they are read
 Help set | less
+
+cat -n filename -- Numbers all output lines.
+
+------------------------------------------------------------------------------------------------------------------------------------
  
-Sed - stream editor
+Sed - stream editor:
+
+The sed (Stream Editor) command in Linux is a powerful command-line utility used to parse, filter, and transform text data dynamically.
+It operates non-interactively, processing text line-by-line using a temporary buffer called the pattern space.
+
+-i: Modifies the file directly and permanently (in-place) instead of just printing changes to the terminal.
+-n: Suppresses default line printing so sed only displays what you explicitly request.
+-E or -r: Enables Extended Regular Expressions (ERE) for advanced pattern matching.
+-e: Allows chaining of multiple sed expressions sequentially in one command line.
+
+***************************** syntax: sed [OPTIONS] 'SCRIPT' [INPUTFILE...] *****************************************
+
+sed '' file.txt -- this will just display the whole file again, acts same as cat
+
+deletion:
+
+sed '2d' file.txt -- does not print 2nd line output to the screen, meaning 2d -- delete 2nd line.
+sed -i '2d' file.txt -- delete the 2nd line in place, inside the file.
+
+sed '3,7d' file.txt -- Delete a Range of Lines: Drops lines 3 through 7 inclusive.
+
+sed '5,$d' file.txt -- Delete from Nth Line to the End: Drops line 5 up through the final line
+
+sed '/error/d' file.txt -- Delete Matching Patterns: Erases any line that contains the word "error"
+
+sed '/^$/d' file.txt -- Remove All Blank Lines: Cleans up files by wiping empty lines using regex anchors (^$ matches line start to end with nothing between).
+
+sed '/^#/d' file.txt -- Remove Comments: Strips lines starting with a hash symbol
+
+
+*******sed does not make changes to file in any way, it just reads file and does operation mentioned in '' feild and displays o/p.**********
+**************to makes changes to the actually file use "-i" option, this will edit the file in place
+
+Printing:
+
+sed '2p' file.txt -- prints only 2nd line along with whole file, this is sed's default behaviour.
+sed -n '2p' file.txt -- this will only print 2nd line, and "-n" option will supress default behavior sed.
+
+sed -n '10,20p' file.txt -- Print a Range of Lines: Mimics a customized head/tail command for lines 10 to 20.
+
+sed -n '/critical/p' file.txt -- Print Lines Matching Pattern: Functions exactly like the grep utility.
+
+-----------------------------------------------------------------------------------------------
+substitute:
+
+sed 's/fish/dog' file.txt -- this will substitute fish with dog in whole file, but only one occurence in a single line, substitues only 1 fish word with dog in each line found.
+
+sed 's/fish/dog/g' file.txt -- this will substitute all occurences of fish with dog in the whole file.
+
+sed -i 's/fish/dog/g' file.txt -- substitues all the occurences and also edits the file in place
+
+sed 's/apple/orange/2' file.txt --  Replaces only the 2nd instance of "apple" found on each line. -- Replace the Nth Occurrence
+
+sed 's/apple/orange/gI' file.txt -- Finds and replaces "apple", "Apple", or "APPLE" seamlessly. -- Case-Insensitive Match (I)
+
+sed '5s/apple/orange/g' file.txt -- Restrict to Specific Lines: Performs substitution exclusively on line 5.
+
+sed 's|/usr/bin|/usr/local/bin|' file.txt -- Use Custom Delimiters: Useful for changing file paths without escaping backslashes.
+
+Text Insertion and Appending Use Cases:
+
+sed '1i\Header Text' file.txt -- Insert Text Before a Line (i): Inserts "Header Text" directly above line 1.
+
+sed '$a\Footer Text' file.txt -- Append Text After a Line (a): Appends "Footer Text" right below the final line.
+
+sed '4c\This is the new line content' file.txt -- Replace an Entire Line (c): Changes line 4 completely to the newly provided content.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+awk command:
+
+syntax: awk [options] 'script' file.txt/STDIN --piped
+
+or
+awk [options] 'pattern { action }' input_file
+
+
+awk command in Linux is a highly versatile tool, serving as a complete, data-driven programming language designed primarily for text processing, 
+data extraction, and reporting. 
+
+-- It processes files or data streams line-by-line, automatically breaking each line into indexed fields.
+
+Variable			Description
+$0					The entire current line.
+$1, $2, ...			Individual indexed columns (fields).
+NF					Number of Fields in the current line.
+$NF					The value of the very last field on the line.
+NR					Number of Records (total lines processed so far).
+FS					Input Field Separator (default: whitespace).
+OFS					Output Field Separator (default: space).
+
+eg:
+
+awk does not modify anything, it just processed and prints the o/p 
+awk's default delimiter is <space>, you can change the delimiter to make feilds based on any character delimiter.
+
+who | awk '{print $1, $3}' -- Targets the first column (username) and third column (login date), stripping out all intervening data.
+
+awk -F: '{print $1, $NF}' /etc/passwd -- change the default <space> delimiter to ":"
+--  The -F: option splits records by colons. This safely isolates the username ($1) and user shell ($NF) from the Linux password file.
+
+regex matching and downstream passing :
+awk '/manager/ {print $1, $4}' employees.txt -- Searches sequentially for records containing the string "manager". It prints only the name ($1) and salary ($4) fields for matching rows.
+
+awk -F, '$3 > 5000 {print $1}' sales.csv --  Inspects column 3 numerically. If the value exceeds 5000, it prints the first column.
+
+awk 'NR==3, NR==6 {print NR, $0}' log.txt --  Evaluates the current line count via NR. It outputs lines 3 through 6 inclusive, prepended with their row index.
+
+awk 'BEGIN{FS=" "; OFS=" | "} {print $1, $2, $3}' system.log -- Accepts standard space-delimited text via FS, but formats output elements strictly using pipe anchors via OFS
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Use grep: When you simply want to find lines matching a basic pattern.
+Use sed: When you need to make straightforward line-by-line text substitutions or deletions.
+Use awk: When your data structure is column-based, requires mathematical aggregation, or depends on state tracking across lines.
+
+=================================================================================================================================================================
+
+printf command:
+
+does same as echo but better with more control.
+
+-- a powerful utility used to print formatted text, numbers, and variables to the terminal
+-- Derived from the printf function in the C programming language, it provides far greater control over layout, precision, and alignment than the standard echo command.
+-- Unlike echo, printf does not append a newline character automatically; you must explicitly define how the output is structured.
+
+syntax: printf FORMAT [ARGUMENTS...]
+FORMAT: A string containing literal characters, escape sequences, and format specifiers.
+ARGUMENTS: The data or variables inserted into the format specifiers.
+
+Format specifiers:
+
+%s: Formats the input as a basic string.
+%b: Formats a string and explicitly expands backslash escape sequences (like \n) within that argument.
+%d or %i: Formats a signed decimal integer.
+%f: Formats a floating-point number.
+%x / %X: Formats an unsigned integer as hexadecimal (lowercase/uppercase).
+%%: Prints a literal percent sign (%)
+
+Important Escape Sequences:
+
+\n: Creates a newline.
+\t: Inserts a horizontal tab space.
+\\: Prints a literal backslash.
+\a: Triggers an alert (produces a terminal system bell sound).
+
+Eg:
+
+printf "Hello World\n" -- Because printf doesn't append a newline by default, you must explicitly use \n to transition to the next line.
+
+-- Injecting Multiple Variables into Text.  You can cleanly pass shell variables directly into structured text templates
+NAME="Alice"
+AGE=25
+printf "User %s is %d years old.\n" "$NAME" "$AGE"
+# Output: User Alice is 25 years old.
+
+Creating Aligned Columns (Data Tables)You can define explicit column widths by placing a number between % and the specifier. 
+A positive number right-aligns data, while a negative number left-aligns it.
+
+# Left-align Name (15 chars wide), Right-align Score (5 chars wide)
+printf "%-15s %5s\n" "Name" "Score"
+printf "%-15s %5d\n" "John Doe" 95
+printf "%-15s %5d\n" "Jane Smith" 100
+
+
+Formatting Floating-Point PrecisionControl the number of decimal points displayed by adding .N before the %f specifier.
+
+PI=3.14159265
+printf "Pi to 2 decimals: %.2f\n" $PI   # Output: 3.14
+printf "Pi to 4 decimals: %.4f\n" $PI   # Output: 3.1416
+

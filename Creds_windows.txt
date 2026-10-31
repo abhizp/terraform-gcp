@@ -1,6 +1,121 @@
-Adm ID: ablnu_adm
-New Password: Winter1234
 
-Bov6Hisu$O5o
 
-Cognizant Password : BigWhiteWhale@23
+
+
+
+Below is one of the example of ldap issue mentioned above
+ 
+lakrtmspr08:/etc/security/ldap # cat ldap.cfg | grep -i ldapse
+#ldapservers:myldapserver.ibm.com
+#ldapservers:ldap.ngco.com,cwheadcpr010,cwheadcpr009,cwheadcpr007,cwheadcpr008,cwheadcpr006
+ldapservers:ldap.ngco.com
+ 
+
+lakrtmspr08:/etc/security/ldap # ps -ef | grep -i ldap
+    root 23724954 35653032   0 01:29:13  pts/0  0:00 grep -i ldap
+    root 52102574        1   0   Dec 31      -  0:02 /usr/sbin/secldapclntd
+ 
+
+lakrtmspr08:/etc/security/ldap # id ablnu
+lakrtmspr08:/etc/security/ldap # /usr/sbin/flush-secldapclntd
+
+lakrtmspr08:/etc/security/ldap # id ablnu
+
+lakrtmspr08:/etc/security/ldap # ls-secldapclntd | grep ldapservers
+ldapservers=ldap.ngco.com
+ 
+All the conditions are met yet, the server is unable to fetch my ID from ldapserver, tried flushing cache, if I restart the service, it will work for a while and again it will stop fetching ldap details
+ 
+Os-version should not be the issue
+ 
+lakrtmspr08:/etc/security/ldap # oslevel -s
+7200-05-08-2420
+
+
+sudo su -
+cd /etc/security/ldap
+ls-secldapclntd | grep ldapservers
+cat ldap.cfg | grep ldapservers
+cp -pr ldap.cfg ldap.cfg_bkp_20250917
+ls -l | grep ldap.cfg
+vi ldap.cfg  -- ldap.ngco.com
+kill -9 `ps -ef | grep -i secldapclntd | grep -v grep | awk '{print $2}'`
+/usr/sbin/restart-secldapclntd
+cat ldap.cfg | grep ldapservers
+lssrc -a | grep -i ldap
+startsrc -g secldap
+ps -ef | grep -i secldapclntd | grep -v grep
+ls-secldapclntd | grep ldapservers
+ 
+ldapservers:ldap.ngco.com
+ 
+sudo su -
+ls-secldapclntd | grep -e "^current ldapserver" -e "^ldapservers"
+exit
+
+
+Spooler related commands:
+ 
+--- lpstat -p -- to list all printer queue
+--- lpstat -p<printer_name> -- no space in ebwteen -- Eg : lpstat -pp66-5d34
+    this will also display the connection and the queue status
+ 
+-- lpstat -o<printer_name> -- no space in bewteen -- Eg : lpstat -op66-5d34
+   To Check Jobs in the Queue for That Printer
+-- ping the ip address of the printers to check the status. whether its up or not, if not provided ask the team to provide the IP address.
+ 
+-- qcan -X -Pp66-5d34 -- to clear the queue and empty the queue of the printer.
+-- qcan -x494 -- to kill/clear the individual jobs -- look for the job id in lpstat output.
+ 
+-- lpstat -p<printer_name> -- recheck again and confirm whether the queue is empty
+ 
+-- restart the services using below commands, if required also restart spooler group services.
+stopsrc -s qdaemon
+startsrc -s qdaemon
+ 
+grep -p p66-5d34 /etc/qconfig -- to check printer's backend config
+ 
+enable qdaemon -- if the qdaemon is diabled -- very rare, no way.
+ 
+enable p66-5d34 / enable <printer_name>-- to enable the printers.
+ 
+and again check using lpstat commands
+
+
+lpstat -p61LB11
+lpstat -p61LB22
+lpstat -p61LB21
+lpstat -p61LB24
+lpstat -p61LB50
+lpstat -p61LB40
+lpstat -p61LB10
+lpstat -p61LB02
+
+
+06490000034
+
+06490040955
+
+
+echo "insert into employee (emp_num, e_name, sin_num, job_code, e_passwd, e_security, e_pwd_chng_dt, e_encrypt_passwd) values ('67206', 'Ret. Tech Implementation', NULL, '99', '52511', NULL, '06/10/2026', '0Ncr/AAAAEAUsKoaH2ruxPwBTBNuuHvteErJKRMO2fm');" | dbaccess -e boss
+
+84367775704
+
+778 8190416
+764815239
+
+
+
+STR Screen:
+
+Price changes feild should never be empty
+
+
+12th of oct
+
+7 pm -- friday
+
+
+click house -- logs
+
+

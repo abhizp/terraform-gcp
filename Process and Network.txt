@@ -1,4 +1,265 @@
 ps -eo pid,ppid,state,cmd | grep defunct -- to list all the zombie process, the state will have "Z" in them.
 
- 
+networking commands:
 
+ip link
+
+ip addr
+
+ip addr add <ip> dev eth0
+
+ip route / route
+
+ip route add <ip> via <ip>
+
+netstat -nlp
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Process Linux:
+
+ps -eo pid,ppid,cmd,%cpu,%mem --sort=%cpu | head 
+
+
+
+pidof:
+pidof command in Linux is a command-line utility used to find the exact process ID (PID) of a running program by its binary name.
+
+pidof [OPTIONS] program_name
+
+eg: pidof nginx
+
+killall:
+The killall command in Linux terminates processes by their exact name rather than their Process ID (PID).
+
+killall [process_name]
+eg: killall firefox
+
+killall firefox sends a SIGTERM signal by default, allowing the app to save data.
+
+killall -9 firefox (or killall -s KILL firefox) sends a SIGKILL signal, instantly terminating the process without saving.
+
+
+pgrep:
+
+pgrep <name/nearest name to process>  -- will give you pid -- uses regex
+
+pkill:
+pkill -9 <name/nearest name to process>  -- will kill the process -- uses regex
+
+signals to the process:
+kill -15 <pid> -- this will kill the process soft kill -- default
+kill -9 <pid> -- force kill
+kill -1 <pid> -- this will just reload the config files of the process
+kill -HUP <PID>
+kill -SIGHUP <pid> -- hangs up process/halts/kills the process
+
+ SIGTERM (15) - Graceful Stop
+ kill <PID>
+# same as
+kill -15 <PID>
+
+ SIGKILL (9) - Force Kill
+kill -9 <PID>
+
+3. SIGHUP (1) - Reload Configuration
+kill -HUP <PID>
+
+4. SIGSTOP (19) - Pause Process
+kill -STOP <PID> -- Process remains in memory but stops executing.
+
+5. SIGCONT (18) - Resume Process
+kill -CONT 1234 -- Resumes a stopped process.
+
+6. SIGINT (2)
+Ctrl+C -- Terminal sends SIGINT to the foreground process.
+
+7. SIGTSTP (20)
+Ctrl+Z -- Stops the process and returns control to the shell.
+
+kill -l -- List all signals
+
+kill -SIGTERM <PID>
+kill -SIGKILL <PID>
+kill -SIGHUP <PID>
+
+nice and renice
+top, htop, ps -aux, ps -ef,lsof
+
+
+Process states:
+running -- R
+stopped -- T
+sleeping(int) -- S
+sleeping(unInt) -- D -- uninterruptable sleep mode, here its waiting for i/o or disk usage
+zombie -- Z
+
+ps <pid> -- to get the process info 
+
+ctrl + c -- SIGINT
+ctrl + d -- SIGSTP -- stops process and puts it in the bg
+ctrl + d -- not a signal, rather its a EOF, meaning it closes open interactive session/shell terminal, people assume it to logout
+
+jobs -- will list all the jobs in the current session.
+
+fg -- will bring the process in fg, 
+fg <job-id> -- to bring it fg
+
+ctrl+d -- to put the job in the bg and stop it.
+
+process and jobs are diff, job refers to your current sessions jobs and they have diff job-id per session.
+
+bg <job-id>  -- to reactive the stopped job in the bg, it will run but in bg
+
+& only runs the process in the background of the current shell. If the terminal or SSH session closes, the process may receive a SIGHUP and terminate. 
+nohup makes the process ignore SIGHUP so it continues running even after logout. 
+Therefore, nohup command & is commonly used for long-running tasks that must survive a disconnected session.
+
+Networking tools:
+
+ip a/addr/address -- to list all the ip address 
+ip route -- it will list the route table
+ip neighbor -- it will list out all the neighbors and their mac address -- arp neighbor
+
+ifconfig -- to list the ip address
+arp -- same as ip neighbor
+route -- shows all the routes
+
+nmcli -- tool to change the network configs
+netstat 
+
+ss -- new version of netstat
+
+in order to change the network configs, edit the files or use nmcli to do the permanet changes.
+
+
+Name resolution:
+
+/etc/nsswitch -- change the configs here, regarding name resolution, like /etc/hosts or /etc/resolv.conf
+
+uname, hostname, hostnamectl
+
+dig, nslookup
+
+resolvctl flush-cache -- clear dns cache
+resolvectl (or resolvctl) is a Linux command-line tool used to manage and query the systemd-resolved network service. 
+It lets you look up domain names, check DNS settings, and modify network-specific Domain Name System (DNS) servers. 
+
+Run the command by itself to view your active DNS servers, search domains, and connection status:resolvectl status
+
+The host command in Linux is a minimal, command-line utility used for DNS (Domain Name System) lookups
+
+host google.com
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+The whois command in Linux is a command-line utility used to query public databases to retrieve registration and ownership details for domain names, IP addresses, and Autonomous System Numbers (ASNs)
+
+whois google.com
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+ping
+traceroute
+mtr (my trace route) -- newer and better version of traceroute
+
+ports and stuff:
+netstat -tuna
+netstat -tulp
+
+tcpdump -- cli tool to capture trafic on your network interface, captures both ways.
+sudo tcpdump 
+sudo tcpdump -i <network-interface>
+sudo tcpdump host <ip-addr> -w dump.pcap -- listen incoming/outgoing traffic from both side on specific ip and write it to a file named <name>.pcap
+
+use this file later in wireshart to analyze the dump
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+curl/wget
+
+The primary difference is that wget is a dedicated tool for downloading files, while curl is designed to transfer data to and from a server
+
+wget:
+Downloading files/directories.
+Saves straight to a file.
+Recursive Downloading: Built-in (can mirror whole sites).
+Supported Protocols: Few (HTTP, HTTPS, FTP, FTPS).
+standalone utility
+
+wget: Automatically saves the file locally using its remote name.
+wget https://example.com/file.zip
+
+wget: Uses an uppercase -O:
+wget -O my_filename.zip https://example.com/file.zip
+
+Interacting with REST APIs (POST Requests)
+wget: Features limited payload and header control.
+
+you are downloading large files or large groups of files over a shaky network connection (it handles connection drops and resumes brilliantly).
+You need to mirror an entire website or directory.
+You want a long-running download job to immediately execute in the background while you close your terminal session
+
+curl:
+curl acts like a network "Swiss Army knife" optimized for bidirectional data transfer, complex protocol handling, and scripting.
+Bi-directional data transfer.
+Prints directly to the terminal screen (stdout).
+Extensive (HTTP, FTP, SFTP, SCP, SMTP, POP3, etc.).
+Background Support: Relies on standard Linux shell operations (&, nohup).
+
+downloading files:
+curl: You must explicitly instruct it to save the file. Lowercase -o lets you name it manually; uppercase -O uses the remote filename.
+curl -O https://example.com/file.zip
+
+curl: Uses a lowercase -o:
+curl -o my_filename.zip https://example.com/file.zip
+
+3. Interacting with REST APIs (POST Requests):
+curl -X POST -H "Content-Type: application/json" -d '{"user":"linux"}' https://example.com
+
+Choose curl if:You are testing, querying, or scripting interactions with a web API.
+You want to upload data or send complex HTTP request methods (POST, PUT, DELETE).
+You are writing scripts where the data should be piped immediately into another tool (e.g., parsing JSON directly into jq).
+You need to communicate over protocols outside of standard web traffic, like SFTP, SCP, or SMTP.
+
+scp/sftp/ftp/rsync -- to share files over network
+
+
+sshkey-gen -R <hostname> -- to remove key of that store from known hosts
+
+
+lsof +L1 --> list open file that have fewer than 1 link, meaning they unlinked/deleted -- to list ghost space consuming files
+
+lsof +L1 /var
+
+lsof -p <PID> -- to list everything about a process
+
+ls /proc/<PID>/fd | wc -l -- to list the file descriptors
+
+ulimit -n -- list open FD
+
+strace -p <PID>  -- to trace system calls
+
+ps -eLf -- to inspect threads
+
+top -H -- shows individual threads
+
+
+Memory Leak -- Might occur when an application continuously allocates memeory without releasing objects/resources that are no longer required
+			-- Application continuously retains memory it no longer needs
+			
+Memory Pressure -- System does not have enough readily available RAM for current demand
+
+
+OOM -- Goal is to recover system when memory cannot satisfy allocations
+
+
+Linux Applications interact with resources through file descriptors --
+
+FD 0 - stdin
+1 - stdout 
+2 - stderr
+3 - file
+4 - tcp socket
+5 - another socket
+
+virtual address space

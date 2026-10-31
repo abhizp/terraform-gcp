@@ -1,0 +1,87 @@
+
+
+
+
+Vcenter login:
+
+https://VMNAME.ngco.com
+https://vlhevcspr01.ngco.com
+
+
+abhishek.lnu@loblaw.ca
+
+ 
+
+hmc console : AIX
+
+
+vtmenu -- to get the frame info
+
+prtconf |more -- to see serial number of machine
+
+
+
+startsrc -s nfsd
+
+systemctl status traps_pmd
+ps -ef | grep -i pmd | grep -v grep
+
+---Server access---
+
+
+
+
+i dont have that.. this is for corp  servers right?
+
+
+
+
+
+
+
+
+nameserver	10.106.8.199
+nameserver	10.72.8.199
+
+systemctl list-units --type=service | grep ldap
+systemctl list-unit-files | grep ldap
+
+
+firewall request link:
+
+
+grep -i "PasswordAuthentication" /etc/ssh/sshd_config
+
+vlgrdpr001 -- kubernetes server
+
+[root@vl05134bosspr01 ~]$ /usr/local/qualys/cloud-agent/bin/qualys-cloud-agent.sh ActivationId=971a59a4-bcd2-4750-8598-2afb31c857da CustomerId=9c0e25e2-ea82-5af6-e040-10ac13043f6a ServerUri=https://qagpublic.qg1.apps.qualys.com/CloudAgent/
+hostid search path: /etc
+[root@vl05134bosspr01 ~]$ echo $?
+0
+[root@vl05134bosspr01 ~]$ rpm -ivh qualys-cloud-agent-7.2.3-8.x86_64.rpm
+error: open of qualys-cloud-agent-7.2.3-8.x86_64.rpm failed: No such file or directory
+[root@vl05134bosspr01 ~]$ cd /home/lcluser01
+[root@vl05134bosspr01 lcluser01]$ ls -l
+total 14768
+-rw-r--r--. 1 root      root     24377 Apr  3  2025 add-google-cloud-ops-agent-repo.sh
+drwxr-xr-x. 2 lcluser01 users      126 Jan 10 05:17 networker
+drwxr-xr-x. 3 lcluser01 users      157 Jan 10 05:53 OIQ
+-rw-r--r--. 1 lcluser01 users 15097604 Jan 10 05:53 qualys-cloud-agent-7.2.3-8.x86_64.rpm
+[root@vl05134bosspr01 lcluser01]$ rpm -ivh qualys-cloud-agent-7.2.3-8.x86_64.rpm
+warning: qualys-cloud-agent-7.2.3-8.x86_64.rpm: Header V4 RSA/SHA256 Signature, key ID d285e39b: NOKEY
+Verifying...                          ################################# [100%]
+Preparing...                          ################################# [100%]
+        package qualys-cloud-agent-7.2.3-8.x86_64 is already installed
+[root@vl05134bosspr01 lcluser01]$
+
+
+XXX's NF Toronto Bloor
+
+
+sssskumar@google.com --- GCP tutor
+
+netstat , ss
+
+
+echo "insert into employee (emp_num, e_name, sin_num, job_code, e_passwd, e_security, e_pwd_chng_dt, e_encrypt_passwd) values 
+						('67206', 'Ret. Tech Implementation', NULL, '99', '85350', NULL, '03/11/2026', '0Y5z/AAAAEANY6AojHcca1HTRrlsWX8BhnNxqJ2QDUL');" | dbaccess -e boss

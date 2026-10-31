@@ -132,8 +132,8 @@ dmidecode -s system-product-name -- to check whether the machine is a VM ware or
 
 sysctl -- to change the default value at the kernel, its safer.
 
+xargs:
+a powerful utility used to build and execute commands from standard input (stdin)
 
 
-
-
-
+command1 | xargs [options] command2

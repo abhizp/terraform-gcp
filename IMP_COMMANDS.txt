@@ -9,11 +9,14 @@ v -- verbose output
 z -- zip
 f -- specify file_name
 p -- preserve permissions
+x -- extract
 
 tar -xvzf file_name -- to extract to the same directory structure.
 
 tar --same-owner -xvzf file_name -- to unzip with same owner permissions as it was wn tarred
 tar -xvzf file_name --no-same-owner -- to make yourself owner of the files when untarred
+
+
 
 dd command -------------
 
@@ -115,7 +118,7 @@ ls /dev/sd* or fdisk -l -- Verifies if new disks are detected
 fdisk -l -- Verifies if new disks are detected
 
 pvcreate /dev/sde -- to create a new physical volume
-pvs -- to verify if its created 
+pvs -- to verify if its created
 
 vgs -- to get the VG name
 vgextend rootvg /dev/sde -- to extend the PV to that VG
@@ -124,7 +127,7 @@ vgs -- to verify whether the VG is extended or not
 
 df -h -- to get the LV name which is to be extended
 
-lvextend -r -L +5G /dev/mapper/rootvg-optlv -- to extend the LV.
+lvextend -r -L +1G /dev/mapper/baseappvg-applv -- to extend the LV.
 
 hostnamectl set-hostname server_name -- this will take effect immediatly, but will not be shown in command prompt, you have to reboot to get it changed every where
 update /etc/hosts -- add a new line with ip addr and host name -- 127.0.1.1		server_name
@@ -155,3 +158,410 @@ journalctl -g "keyword1" -g "keyword2" -- filtering by keywords
 tail -f -- also works in similar way.
 
 
+Tar -- archieving
+
+-- it naturally does not compress any files, it just takes a whole bunch of files, directory and streches them out and creates a one large file, where
+all the files are just placed in some order.
+-- use "z" falg in tar to actually zip the file.
+
+CPIO:
+
+-- The cpio (Copy In, Copy Out) command in Linux is a foundational utility used to create, extract, and copy archive files.
+-- Unlike tar, which directly accepts file names as arguments, cpio reads a list of target file paths from the standard input (stdin) and 
+writes the resulting archive to the standard output (stdout).
+-- Because of this design, it is almost always paired with file-finding utilities like find via a pipe.
+
+The behavior of cpio is dictated by its core operational modes:
+Copy-Out Mode (-o): Creates an archive by reading a list of files from standard input.
+Copy-In Mode (-i): Extracts files or views the contents of an existing archive from standard input.
+Copy-Pass Mode (-p): Copies a directory tree from one location to another directly without creating an intermediate archive file.
+
+Eg:
+
+find . -name "*.txt" | cpio -ov > archive.cpio -- To bundle files into a .cpio archive, generate a list of files with find and pipe them to cpio -o.
+
+-o: Enables copy-out mode to build the archive.
+-v: Verbose mode to print file names on the screen as they are processed.
+>: Redirects the stream out of standard output into a physical file.
+
+cpio -idv < archive.cpio -- To extract files into your current working directory, pipe or redirect the archive into cpio -i
+
+-i: Enables copy-in mode to unpack the files.
+-d: Automatically creates leading directories if they do not exist.
+<: Standard input redirection to read the archive file.
+
+find /source_dir -type f | cpio -pdm /destination_dir -- To clone files from a source folder directly to a destination path while completely preserving metadata, permissions, and directory structure:
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+dd command:
+
+-- The dd command in Linux is a powerful command-line utility used for low-level data copying, conversion, and formatting at the byte or block level.
+-- Because everything in Linux is treated as a file (including physical hardware like hard drives and USB sticks), 
+dd can bypass the operating system's standard file system structures to clone, backup, or wipe data directly on raw storage blocks
+
+-- Due to its raw execution power, typing a single incorrect character can completely overwrite and destroy a production system's data. 
+This has earned it the famous nickname "Disk Destroyer".
+
+Syntax:
+
+dd if=SOURCE of=DESTINATION [OPERANDS]
+
+if= (Input File): The data source. This can be a text file, an ISO image, or a physical drive block like /dev/sda.
+of= (Output File): The data destination. This is where the copied data is written.
+bs= (Block Size): The amount of data read and written at a single time (e.g., bs=4M tells dd to move data in 4-Megabyte chunks).
+count=: The specific number of blocks to copy before stopping.
+status=progress: A highly recommended option that displays real-time transfer speeds and completion statistics.
+
+Eg:
+
+Creating a Bootable USB Drive:
+This is one of the most common modern uses for dd. It writes a downloaded installation file directly onto a flash drive to make it bootable.
+sudo dd if=ubuntu-26.04.iso of=/dev/sdb bs=4M status=progress
+
+2. Cloning an Entire Hard Drive
+use dd to copy the exact bit-for-bit data from one hard drive directly to another, making it a perfect tool for hard drive replacement.
+sudo dd if=/dev/sda of=/dev/sdb bs=64K status=progress
+
+3. Backing Up a Drive or Partition to an Image File
+Instead of cloning directly to a physical drive, you can compress a whole drive's contents into a raw image file (.img) stored safely elsewhere.
+sudo dd if=/dev/sda1 of=/backup/partition1_backup.img bs=4M status=progress
+
+4. Securely Wiping a Disk
+By pulling a continuous stream of data from special Linux system files like /dev/zero or /dev/urandom, 
+you can overwrite a hard drive to ensure previous files cannot be easily recovered
+
+# Overwrites the disk with zeros (fast)
+sudo dd if=/dev/zero of=/dev/sdb bs=1M status=progress
+
+# Overwrites the disk with random data (more secure)
+sudo dd if=/dev/urandom of=/dev/sdb bs=1M status=progress
+
+5. Creating a Large Empty File (e.g., for Swap Space)
+If you need to quickly generate an empty file of a specific size (like a 2GB file to extend virtual memory), you can combine the bs and count parameters.
+dd if=/dev/zero of=/swapfile bs=1M count=2048
+
+6. Text Manipulation and Conversion
+dd if=lowercase.txt of=uppercase.txt conv=ucase
+
+Critical Safety Best Practices:
+Always unmount your drives using umount /dev/sdX before executing a write command to avoid corrupted data states.
+Double-check your targets using utility commands like lsblk or fdisk -l to verify the exact letter designator (/dev/sda, /dev/sdb, etc.) of your devices.
+Add error bypasses for failing drives: If you are using dd to recover data from a physically damaged drive, attach conv=noerror,
+sync to tell the utility to skip bad sectors and keep going instead of crashing.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+compression:
+
+gzip --old
+bzip2 -- bit latest
+xz -- newest and cooler
+
+gzip and all other tools, compresses the file and removes the older file.
+
+gzip -k -- it compress the file and keeps it there
+
+gzip file.txt -- to compress and create a new file and discard the old one.
+Compresses file.txt → file.txt.gz
+❌ Deletes the original file.txt
+Yes, gzip always creates a new file with .gz appended
+It does not modify the original file's name, it creates a new compressed file
+
+gzip -k file.txt -- to compress and create compressed file and keep the original file also.
+gzip -k in Linux means:
+-k stands for "keep"
+It tells gzip to keep the original file after compression
+Compresses file.txt → file.txt.gz
+✅ Keeps the original file.txt
+
+uncompress:
+
+gzip -d file.txt.gz -- to uncompress
+gunzip file.txtgz 
+
+bzip2:
+bzip2 file.txt -- to compress
+bzip2 -k file.txt -- to compress and keep the old file.
+
+bunzip2 file.txt.bz2 -- to unzip
+bzip2 -d file.txt.bz2 -- to unzip
+
+xz:
+xz file.txt -- to compress
+xz -k -- to compress and keep the old file.
+
+xz -d file.txt.xz -- to uncompress
+unxz file.txt.xz -- to uncompress
+
+zip:
+
+zip -r folder -- it archives and zips at the same time.
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+scp command:
+scp (Secure Copy Protocol) command in Linux is a command-line utility used to securely copy files and directories between hosts on a network
+a command-line utility used to securely copy files and directories between hosts on a network. It uses SSH (Secure Shell) for data transfer and authentication, 
+ensuring that your data remains encrypted during transit.
+
+syntax : scp [flags] source destination
+
+scp [options] [user@source_host:]source_path [user@destination_host:]destination_path
+
+Flags:
+-r : Recursively copy entire directories. Required when transferring folders.
+-P port : Specify a custom SSH port to connect to on the remote host (Note: uppercase P). Default is 22.
+-i identity_file : Select the file from which the identity (private key) for SSH authentication is read.
+-C : Enable compression. Compresses data at the source and decompresses it at the destination to speed up slow connections.
+-p : Preserve original modification times, access times, and modes (permissions) from the original file.
+-q : Quiet mode. Suppresses the progress meter, administrative messages, and warnings.
+-v : Verbose mode. Forces scp and ssh to print debugging messages, which is highly useful for troubleshooting connections.
+
+
+eg:
+scp remote_server_file local_directory
+
+scp tman@vl00000bosspr01:/u/ablnu/* . -- copy file from remote server to your server.
+
+scp abhi.txt tman@vl99999bosspr01:/u/abzzp/. -- copy local file to the remote server.
+
+2. Copy a folder from a remote server to your local machine:
+scp -r user@remotehost.com:/var/www/html/ ./local_backup/
+
+3. Copy a file using a custom port and an SSH key:
+scp -P 2222 -i ~/.ssh/id_rsa file.zip user@192.168.1.50:/tmp/
+
+4. Limit bandwidth to 500 Kbit/s and compress files during transfer:
+scp -C -l 500 large_image.iso user@remotehost.com:/storage/
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+RSYNC:
+
+-- The rsync (Remote Sync) command in Linux is a highly efficient utility used to copy and synchronize files and directories either locally or between remote systems
+rsync uses a delta-transfer algorithm that transmits only the changes made to files, making it the industry standard for backups and mirroring.
+
+SYNTAX:
+
+rsync [OPTIONS] SOURCE DESTINATION
+
+Crucial Rule: The Trailing Slash (/):
+-- With a trailing slash (/src/): Copies only the contents of the directory into the destination.
+-- Without a trailing slash (/src): Copies the entire directory itself into the destination.
+
+Flags:
+
+Flag		Name				Description
+-a			Archive				Enters archive mode; copies recursively and preserves symlinks, permissions, timestamps, and ownership.
+-v			Verbose				Prints detailed information about the files being transferred.
+-h			Human-Readable		Formats all numerical outputs (like file sizes) into easy-to-read formats (e.g., KBs, MBs).
+-z			Compress			Compresses data during transit to save bandwidth over network transfers.
+-P			Progress / Partial	Shows a live progress bar and allows resuming partially transferred files.
+--delete	Delete				Deletes files at the destination if they no longer exist in the source (creates an exact mirror).
+--dry-run	Dry Run				Simulates the command without making changes, showing exactly what would happen.
+
+Eg:
+
+Sync Two Local Directories:
+rsync -avhP /home/user/documents/ /mnt/backup/documents/
+
+2. Push Files to a Remote Server (via SSH)
+rsync -avz ~/projects/ username@remote_host:/var/www/html/
+
+3. Pull Files from a Remote Server
+rsync -avz username@remote_host:/var/www/html/ ~/local_backup/
+
+4. Mirror a Directory (Using --delete)
+Warning: Always combine this with --dry-run first to avoid accidental data loss!
+rsync -av --delete /home/user/source/ /home/user/destination/
+
+5. Exclude Specific Files or Folders
+rsync -av --exclude="*.log" --exclude="node_modules/" /src/ /dest/
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+nc - netcat 
+
+-- a highly versatile networking utility in Linux used for reading from and writing data across network connections using the TCP or UDP protocols.
+Often dubbed the "Swiss Army knife" of networking, it can act as both a client (to connect to a remote server) and a server (to listen for incoming traffic)
+
+syntax:
+nc [options] [hostname/IP] [port]
+
+flags:
+-l: Tells nc to operate in Listen mode (act as a server).
+-v: Enables Verbose mode to output detailed information about connections.
+-p: Specifies a local source port to use.
+-z: Sets nc to Zero-I/O mode, meaning it scans for open ports without sending data.
+-u: Switches the protocol from TCP (default) to UDP.
+-n: Skips DNS lookups, resolving connections using IP addresses only for speed.
+-w: Imposes a connection timeout specified in seconds.
+-k: Keeps the server listening for new connections after a client disconnects.
+
+
+eg:
+1. Port Checking and Scanning
+nc -zv 192.168.1.50 22
+
+nc -zv 192.168.1.50 20-80
+
+2. Creating a Simple Web Server / Listening Port
+nc -lv 8080
+
+3. Creating a Temporary Chat Terminal
+You can use nc to establish an unencrypted, direct peer-to-peer text conversation between two systems.
+
+On Machine A (Server):
+nc -lv 4444 -- local host
+
+On Machine B (Client):
+nc 192.168.1.50 4444
+
+4. Raw File Transfer
+Netcat easily pipes file data across environments without relying on overhead protocols like SSH or FTP
+
+On Receiver Machine: Run this first to listen and route data into a file.
+nc -lv 5555 > received_file.txt
+
+On Sender Machine: Run this second to push the payload
+nc 192.168.1.50 5555 < local_file.txt
+
+
+Systemctl commands:
+
+start / stop
+enable / disable
+restart
+mask -- Masking links the service's configuration file to /dev/null. This prevents the service from being started completely—whether manually, 
+automatically at boot, or as a dependency required by another service
+
+systemctl list-unit-files --type=service | grep masked
+
+unmask: Unmasking removes the /dev/null link, allowing the service to be started or enabled again. 
+Note that unmasking a service does not automatically start or enable it; it simply restores its availability
+status
+
+Schedulers:
+
+at command:
+
+eg:
+
+at tommorow -- enter it will take you to sub shell to do all the things and after doing all just do ctrl + d.
+at now +2 minutes -- execute 2 mins from now.
+atq -- to list all the list of at's
+
+atrm <job_num> -- to remove the job scheduled by at command.
+
+crontab -e -- to add a job for the user, switch to diff user to add diff job per user.
+
+* * * * * <command>
+
+crontab -l -- list all jobs
+
+cron.allow -- to allow people to use cron
+cron.deny -- to deny people from using cron
+
+/etc/cron/cron.d -- the cron daemon here you can put files which will be executed by the system as a user -- edit/add here.
+/etc/cron/crontab -- here programs register their cron jobs against user and you may as well add one -- but do not
+
+cron.daily -- add a script in here which you wanna run every day
+cron.weekly -- add a script in here which you wanna run every week
+cron.monthly -- add a script in here which you wanna run every month
+
+
+
+Package Management:
+dnf, yum, apt, apm, dpkg, zypper
+homebrew - mac
+
+
+flatpak:
+To install sandboxed applications on Rocky Linux, use Flatpak. 
+Flatpak bundles an app and its needed files so it runs safely isolated from your main system.
+
+sandboxed apps -- sandboxed apps create a secure, limited space on your device. They hold all the files and tools the app needs to run. 
+These mini-workspaces are called virtual environments.
+slow and big apps
+
+snap:
+Snap is Ubuntu's built-in package manager that securely bundles applications and their dependencies into self-contained sandboxed packages
+
+
+chroot:
+chroot jail
+used duriing rescue mode
+
+
+The ldd (List Dynamic Dependencies):
+command in Linux is a command-line utility used to display the shared libraries (shared objects) required by an executable or another shared library
+
+ldd /bin/ls
+To use ldd, you must provide the absolute or relative path to a binary file
+
+
+
+
+File system based issue while booting:
+while rebooting, due to some problem in /etc/fstab formatting, or missing mount point or FS corruption, system will not boot and will be stuck
+you will be thrown into initramfs while rebooting,
+you will still have minimal shell
+use blkid or lsblk and identify the FS which is not mounting,
+fsck the file system and mount it and reboot all good
+
+
+If its stuck bcuz of issue in /etc/fstab then
+you will be trhown into maintenance mode, here give root passwd,
+your / FS will be mounted as ro mode, soo use "mount -o remount,rw /" to remount as rw
+investigate the /etc/fstab and related mount points, fix or comment out problem causing issue.
+
+
+-- The above failure is after boot, when the system is initailizing root fs. -- your initramfs is there, system is good
+
+
+OS kernel panic issue:
+This happens after upgrades or patches,
+initramfs itself might be missing/broken, soo it will never boot bcuz initramfs is key between grub and os 
+
+-- so you will be thrown into grub mode, telling initramfs is not found
+-- as initramfs is in your Harddrive, which is not mounted, you will have to boot from other device, change the boot sequence
+-- choose usb drive/cd for this to boot from other bootable device, you will have this option in vmware
+-- you will have ISO in VM ware, select resue mode from boot menu
+-- enter rescue mode, it may mount your root filesystem, if not mount it manually, "mount /dev/mapper/vg_root-lv_root /mnt"
+- mount all your VFS ( /mnt/boot, dev, proc, sys, run) to the current session, -- bind active kernel's virtual FS so dracut can function proeperly inside chroot jail
+-- now chroot /mnt -- your Root filesystem in guest OS is changed to physical disk of your desire,
+-- now cd /boot
+-- use dracut -f
+-- exit; umount all the VFS  and reboot
+-- this will create initramfs files, exit the chroot and go to rescue mode and then reboot again, 
+
+
+Recover/rescue root passwd:
+-- to enter grub screen while booting, use " ctrl + alt + delete " or any key to distrupt the botting sequence
+-- you will enter grub screen
+-- choose the image to boot from, choose rescue mode image -- press "e", to edit the rescue mode option/edit the boot parameters.
+-- you will enter a screen with multiple options, edit the end of string where ^linux, add below strings at the end of line
+(Find the line starting with linux (or linux16), navigate to the very end of that line, and append rd.break. Press Ctrl + X to boot)
+-- "rd.break console=tty1 selinux=0" -- disable sescure hardened linux security, and open terminal
+-- rd.break --> stops the system boot into initramfs itself and you can perform emergency maintenance, does not enter real OS
+-- ctrl + x to move forward
+-- you will enter emergency mode
+-- enter rescue mode, "mount -o remount,rw /sysroot" mount FS in rw as its in ro -- mount root fs as rw
+-- now "chroot /sysroot" -- your Root filesystem in guest OS is changed to physical disk of your desire,
+-- passwd to change the passwd of root
+
+Latest version released - 10
+stable version 9.4 - 9.6
+
+
+smtp port - 25
+if stuck at any question, think of it in diff screnario, or multiple server scenario
+
+
+You are asked to upgrade a server from RHEL 7 to RHEL 8. What is the process:
+You do not just run an update command. You use the Red Hat Leapp utility. First, run the pre-upgrade assessment (leapp preupgrade) which generates a report in /var/log/leapp/leapp-report.txt 
+highlighting incompatible packages, deprecated drivers, or unsupported configurations. Once those are resolved, run leapp upgrade and reboot.
+
+
+dd
+mkswap
+swapon

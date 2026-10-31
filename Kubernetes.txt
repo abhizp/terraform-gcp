@@ -1,0 +1,1496 @@
+Kubernetes:
+
+kubectl api-resources
+# Shows every object, its shortname, API group, and if it's namespaced
+
+kubectl explain deployment
+# Shows the exact apiVersion + all fields with descriptions
+
+#always run kubectl api-resources on your actual cluster — because different K8s versions support different API versions, 
+and what's valid on K8s 1.28 might differ from 1.32.
+
+kubectl edit replicaset new-replica-set
+# find the image field, change it to busybox, save & quit
+
+kubectl delete pods -l app=new-replica-set
+# ReplicaSet will automatically spin up new pods with correct image
+
+kubectl delete pods --all
+#to delete all the pods.
+
+kubectl replace -f file-name.yml --force
+#to delete the existing resources and create a completely new one
+
+kubectl scale replicaset new-replica-set --replicas=4
+#scale up or scale down pods in a replicaset, will get overwritten if the replicaset is replcaed or updated( kubectl apply, kubectl replace will overwrite this)
+
+
+Naming convention:
+Where					Case						Example
+YAML fields				camelCase					imagePullPolicy
+kind: value				PascalCase					ReplicaSet
+kubectl commands		lowercase					kubectl get replicaset
+resource names/labels	lowercase with hyphens		my-replica-set
+
+So the rule is — YAML fields are camelCase, kinds are PascalCase, everything in the terminal is lowercase.
+
+kubectl explain <object>
+#to get full explanation
+
+##Create an NGINX Pod
+kubectl run nginx --image=nginx
+
+##Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run)
+kubectl run nginx --image=nginx --dry-run=client -o yaml
+
+##Create a deployment
+kubectl create deployment --image=nginx nginx
+
+##Generate Deployment YAML file (-o yaml). Don't create it(--dry-run)
+kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
+
+##Generate Deployment YAML file (-o yaml). Don’t create it(–dry-run) and save it to a file.
+kubectl create deployment --image=nginx nginx --dry-run=client -o yaml > nginx-deployment.yaml
+
+##Make necessary changes to the file (for example, adding more replicas) and then create the deployment.
+kubectl create -f nginx-deployment.yaml
+
+OR
+
+##In k8s version 1.19+, we can specify the --replicas option to create a deployment with 4 replicas.##
+kubectl create deployment --image=nginx nginx --replicas=4 --dry-run=client -o yaml > nginx-deployment.yaml
+
+kubectl get all only looks inside a namespace for namespaced resources. Namespaces themselves live outside any namespace — they are cluster-level objects. 
+So they are fundamentally out of scope for this command.
+
+Resources in Kubernetes fall into two categories:
+Scope				Examples																Listed by kubectl get all?
+Namespaced			Pods, Services, Deployments, ConfigMaps									✅ Yes (subset of them)
+Cluster-scoped		Namespaces, Nodes, PersistentVolumes, ClusterRoles, StorageClasses		❌ Never
+
+kubectl get all = a named shortcut for common workload resources, scoped to a namespace. It was never designed to mean every resource in the cluster. 
+Namespaces are cluster-scoped objects and will never appear in its output by design.
+
+Commands:
+
+Before we begin, familiarize with the two options that can come in handy while working with the below commands:
+
+--dry-run: By default as soon as the command is run, the resource will be created. If you simply want to test your command , 
+use the --dry-run=client option. This will not create the resource, instead, tell you whether the resource can be created and if your command is right.
+
+-o yaml: This will output the resource definition in YAML format on screen.
+Use the above two in combination to generate a resource definition file quickly, that you can then modify and create resources as required, instead of creating the files from scratch.
+
+---------------------------------------------------------------------------------------------------------
+
+POD
+Create an NGINX Pod
+
+kubectl run nginx --image=nginx
+
+---------------------------------------------------------------------------------------------------------
+
+Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run)
+
+kubectl run nginx --image=nginx --dry-run=client -o yaml
+
+---------------------------------------------------------------------------------------------------------
+
+Deployment
+Create a deployment
+
+kubectl create deployment --image=nginx nginx
+
+---------------------------------------------------------------------------------------------------------
+
+Generate Deployment YAML file (-o yaml). Don't create it(--dry-run)
+
+kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
+
+---------------------------------------------------------------------------------------------------------
+
+Generate Deployment with 4 Replicas
+
+kubectl create deployment nginx --image=nginx --replicas=4
+
+---------------------------------------------------------------------------------------------------------
+
+You can also scale a deployment using the kubectl scale command.
+
+kubectl scale deployment nginx --replicas=4
+
+Another way to do this is to save the YAML definition to a file and modify
+
+kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > nginx-deployment.yaml
+
+---------------------------------------------------------------------------------------------------------
+
+You can then update the YAML file with the replicas or any other field before creating the deployment.
+
+---------------------------------------------------------------------------------------------------------
+
+Service
+Create a Service named redis-service of type ClusterIP to expose pod redis on port 6379
+
+kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+
+(This will automatically use the pod's labels as selectors)
+
+Or
+
+kubectl create service clusterip redis --tcp=6379:6379 --dry-run=client -o yaml (This will not use the pods labels as selectors, instead it will assume selectors as app=redis. 
+You cannot pass in selectors as an option. So it does not work very well if your pod has a different label set. So generate the file and modify the selectors before creating the service)
+
+---------------------------------------------------------------------------------------------------------
+
+Create a Service named nginx of type NodePort to expose pod nginx's port 80 on port 30080 on the nodes:
+
+kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
+
+(This will automatically use the pod's labels as selectors, but you cannot specify the node port. You have to generate a definition file and then add the node port in manually before creating the service with the pod.)
+
+Or
+
+kubectl create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run=client -o yaml
+
+(This will not use the pods labels as selectors)
+
+Both the above commands have their own challenges. While one of it cannot accept a selector the other cannot accept a node port. I would recommend going with the kubectl expose command. If you need to specify a node port, generate a definition file using the same command and manually input the nodeport before creating the service.
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+kubectl api-resources -- command to list all the resources, objects in k8s with their short hand names,apiversion, if namespaced, kind.
+
+kubectl explain pods -- command to explain the resources, tells all its feilds and basic info of eac feild.
+
+kubectl explain pods.spec -- use this to get feild specific info of a resource.
+
+kubectl explain pods --recursive -- to get all feilds and resource info all at once.
+
+kubectl create(any command/verb) --help   --> to get the falgs or options info with examples.
+
+Kubectl get pods --watch --> will automatically monitor the status of object's lifecycle and update on the screen.
+
+
+----------------------LABELS--------------------------------------------------------------------------------------------------------------------------
+
+# ── WRITE LABELS ──────────────────────────────────────────
+
+# Add a label
+kubectl label pod httpd app=v1
+
+# Update existing label (must use --overwrite or it errors)
+kubectl label pod httpd app=v2 --overwrite
+
+# Remove a label (trailing hyphen = remove)
+kubectl label pod httpd app-
+
+
+# ── ACT ON LABEL GROUPS ───────────────────────────────────
+
+# Delete all pods matching a label
+kubectl delete pods -l app=v1
+
+# Logs from ALL pods matching a label (multi-pod tail)
+kubectl logs -l app=v1
+
+# CPU/memory metrics for matching pods
+kubectl top pods -l app=v1
+
+
+# ── SELECTOR EXPRESSION TYPES ─────────────────────────────
+
+# Equality — exact match
+kubectl get pods -l app=v1
+
+# Equality — NOT match
+kubectl get pods -l app!=v1
+
+# Set based — value is one of these
+kubectl get pods -l 'app in (v1,v2)'
+
+# Set based — value is none of these
+kubectl get pods -l 'app notin (v1)'
+
+# AND — comma = both conditions must match
+kubectl get pods -l app=v1,env=prod
+
+
+# ── INSPECT ───────────────────────────────────────────────
+
+# Shows Labels + Selectors section in human readable form
+kubectl describe pod httpd
+
+# Full label map in YAML
+kubectl get pod httpd -o yaml
+
+# Full label map in JSON
+kubectl get pod httpd -o json
+
+# Extract a specific label value using jsonpath
+kubectl get pod httpd -o jsonpath='{.metadata.labels.app}'
+
+# Show all labels as a column in output (capital -L)
+kubectl get pods --show-labels
+
+# Show specific label as its own dedicated column
+kubectl get pods -L app
+kubectl get pods -L app,env
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Edit a POD
+Remember, you CANNOT edit specifications of an existing POD other than the below.
+
+spec.containers[*].image
+
+spec.initContainers[*].image
+
+spec.activeDeadlineSeconds
+
+spec.tolerations
+
+For example you cannot edit the environment variables, service accounts, resource limits (all of which we will discuss later) of a running pod. 
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+The second option is to extract the pod definition in YAML format to a file using the command
+
+kubectl get pod webapp -o yaml > my-new-pod.yaml
+
+Then make the changes to the exported file using an editor (vi editor). Save the changes
+
+vi my-new-pod.yaml
+
+Then delete the existing pod
+
+kubectl delete pod webapp
+
+Then create a new pod with the edited file
+
+kubectl create -f my-new-pod.yaml
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Edit Deployments
+With Deployments you can easily edit any field/property of the POD template. Since the pod template is a child of the deployment specification,  
+with every change the deployment will automatically delete and create a new pod with the new changes. 
+So if you are asked to edit a property of a POD part of a deployment you may do that simply by running the command
+
+kubectl edit deployment my-deployment
+
+
+Rollbacks:
+
+-- You can only execute one rollback operation at a time per deployment, 
+but Kubernetes automatically sets up versioning that allows you to roll back to any previously retained version (typically the last 10).
+
+How the Versioning System WorksAutomatic: 
+Versioning: Every time you update a deployment's pod template (e.g., changing an image), Kubernetes increments the revision number and creates a new ReplicaSet.
+History Limit: By default, Kubernetes stores the history of your last 10 revisions (stored via the revisionHistoryLimit field in the deployment specification).
+History Tracking: You can view your deployment's version history and the reasons for changes by running:kubectl rollout history deployment/<deployment-name>
+
+
+Rollback Commands:
+To the previous version:
+Reverts to the immediately preceding deployment state.
+kubectl rollout undo deployment/<deployment-name>
+
+
+To a specific version:
+Skips over broken recent releases and goes straight to a stable revision.
+kubectl rollout undo deployment/<deployment-name> --to-revision=<version-number>
+
+Env Variables:
+
+In Kubernetes, you can manage environment variables inside Pod containers using static literal values, ConfigMaps for non-sensitive data, Secrets for credentials.
+
+1. Static Key-Value Pairs:
+You can define literal environment variables directly under the env field of a container array inside your Kubernetes Pod Configuration.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-env-demo
+spec:
+  containers:
+  - name: app-container
+    image: nginx
+    env:
+    - name: APP_COLOR
+      value: "blue"
+    - name: DB_PORT
+      value: "5432"
+
+
+2. Referencing ConfigMaps (Non-Sensitive Configs)
+To decouple configuration from application code, use a Kubernetes ConfigMap. You can inject specific keys or pull all keys at once.
+
+env:
+- name: DATABASE_URL
+  valueFrom:
+    configMapKeyRef:
+      name: my-configmap
+      key: db-url
+
+or
+
+Injecting all keys as variables at once (envFrom):
+
+envFrom:
+- configMapRef:
+    name: my-configmap
+
+3. Referencing Secrets (Passwords & Keys)
+For sensitive data like API tokens or DB passwords, use Kubernetes Secrets to ensure secure data handling.
+
+env:
+- name: DB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: my-secret
+      key: password
+
+
+Injecting all keys as variables at once (envFrom):
+
+envFrom:
+- secretRef:
+    name: my-secret
+	
+CLI:
+
+kubectl exec -it <pod-name> -- printenv  -- View runtime variables inside a running container
+
+# List environment variables for a resource
+kubectl set env pod/<pod-name> --list
+
+# Set a new environment variable on a deployment or replica set
+kubectl set env deployment/my-deploy ENV_VAR_NAME=value
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ConfigMaps:
+
+-- In Kubernetes, a ConfigMap is an API object used to store non-confidential data in key-value pairs.
+-- It allows you to decouple environment-specific configuration artifacts from your container images, making your applications highly portable across development, 
+staging, and production environments.
+
+Key Technical LimitsSize:
+Limit: A ConfigMap cannot exceed 1 MiB. This is due to the constraints of the underlying etcd datastore.
+Security: ConfigMaps do not provide encryption or secrecy. For sensitive data like passwords or tokens, you must use Kubernetes Secrets instead.
+Scope: They are namespaced resources, meaning they can only be consumed by Pods running within the same namespace.
+
+Core Definition Structure:
+A ConfigMap uses data (for UTF-8 text strings) and optional binaryData (for base64-encoded strings) fields instead of a typical spec block.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-settings
+  namespace: default
+data:
+  database_url: "jdbc:mysql://localhost:3306/db"
+  app_mode: "production"
+  ui_config.json: |
+    {
+      "theme": "dark",
+      "features": ["search", "export"]
+    }
+
+--> kubectl create -f app-settings.yaml
+
+1. As Environment Variables (Individual or Bulk)
+You can inject specific keys or dump the entire map into a container using envFrom.
+
+spec:
+  containers:
+  - name: app-container
+    image: nginx
+    envFrom:
+    - configMapRef:
+        name: app-settings
+
+
+2. Mounted as Files in a Volume:
+You can mount the ConfigMap as a directory where each key becomes an individual file name, and the value becomes the file content.
+
+spec:
+  containers:
+  - name: app-container
+    image: nginx
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-settings
+
+
+CLI commands:
+
+Create from literals: kubectl create configmap my-config --from-literal={key}={value}
+Create from a local file: kubectl create configmap my-config --from-file=config.json
+View all maps: kubectl get configmaps
+Inspect values: kubectl describe configmap my-config
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+Secrets:
+
+-- Kubernetes (K8s) Secrets are native objects designed to store and manage small quantities of sensitive data, such as passwords, tokens, API keys, and certificates.
+-- native objects designed to store and manage small quantities of sensitive data, such as passwords, tokens, API keys, and certificates. 
+By decoupling sensitive data from application code, Secrets allow you to configure workloads without embedding credentials directly into container images or application manifests.
+
+
+The Golden Rule: Encoding vs. Encryption
+By default, Kubernetes Secrets are only Base64 encoded, not encrypted. 
+Anyone with API access or access to the underlying etcd database can easily decode them using standard CLI tools (e.g., echo "encoded-string" | base64 --decode). 
+They are a structural tool for segregation, not a standalone security solution.
+
+
+Core Built-in Secret Types:
+Opaque: The default type used for general user-defined key-value pairs (e.g., database passwords, API tokens).
+kubernetes.io/tls: Used specifically for TLS certificates and public/private keys.
+kubernetes.io/dockerconfigjson: Used to store credentials for authenticating against a private Docker registry.
+kubernetes.io/service-account-token: Used by system components to identify a ServiceAccount for API authentication.
+
+1. Imperative (Recommended for quick use):
+
+Creating secrets directly from the command line using kubectl automatically handles the Base64 encoding for you, 
+eliminating the risk of accidental plain-text exposure in your local files.
+
+# From literal values
+kubectl create secret generic my-db-secret \
+  --from-literal=username=admin \
+  --from-literal=password='S!B*d$zDsb'
+
+# From an existing local file
+kubectl create secret generic my-ssh-secret \
+  --from-file=ssh-privatekey=~/.ssh/id_rsa
+
+2. Declarative (YAML)
+
+When writing a YAML manifest, you can input pre-encoded data under the data field, 
+or clear-text values under the stringData field (which K8s will automatically encode when applied).
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-app-secret
+type: Opaque
+data:
+  # Values must be pre-encoded in Base64
+  api-key: dGhpcy1pcy1hLXNlY3JldC1rZXk= 
+stringData:
+  # Values can be in plain text (write-only shortcut)
+  database-url: "jdbc:mysql://localhost:3306/mydb"
+
+
+How Pods Consume Secrets:
+Method 1: Injected as Environment Variables:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod
+spec:
+  containers:
+  - name: web-app
+    image: nginx
+    env:
+    - name: DATABASE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: my-db-secret
+          key: password
+
+
+Method 2: Mounted as Files (Volumes):
+Ideal for applications requiring certificates or multi-line configuration files. 
+Every key in the secret automatically becomes a file inside the specified directory.
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod
+spec:
+  containers:
+  - name: web-app
+    image: nginx
+    volumeMounts:
+    - name: secret-volume
+      mountPath: "/etc/secrets"
+      readOnly: true
+  volumes:
+  - name: secret-volume
+    secret:
+      secretName: my-db-secret
+
+
+Encrypting secret data at reset.
+
+Secrets:
+
+Secrets are not encrypted, so it is not safer in that sense. However, some best practices around using secrets make it safer. As in best practices like:
+Not checking-in secret object definition files to source code repositories.
+Enabling Encryption at Rest for Secrets so they are stored encrypted in ETCD. 
+
+Also the way kubernetes handles secrets. Such as:
+A secret is only sent to a node if a pod on that node requires it.
+Kubelet stores the secret into a tmpfs so that the secret is not written to disk storage.
+Once the Pod that depends on the secret is deleted, kubelet will delete its local copy of the secret data as well.
+
+
+
+
+InitContainers
+In a multi-container pod, each container is expected to run a process that stays alive as long as the POD's lifecycle. 
+For example in the multi-container pod that we talked about earlier that has a web application and logging agent, 
+both the containers are expected to stay alive at all times. The process running in the log agent container is expected to stay alive as long as the web application is running. 
+If any of them fails, the POD restarts.
+
+But at times you may want to run a process that runs to completion in a container. 
+For example a process that pulls a code or binary from a repository that will be used by the main web application. 
+That is a task that will be run only  one time when the pod is first created. 
+Or a process that waits  for an external service or database to be up before the actual application starts. That's where initContainers comes in.
+
+An initContainer is configured in a pod like all other containers, except that it is specified inside a initContainers section,  like this:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: busybox
+    command: ['sh', '-c', 'git clone <some-repository-that-will-be-used-by-application> ; done;']
+
+
+
+When a POD is first created the initContainer is run, and the process in the initContainer must run to a completion before the real container hosting the application starts. 
+
+You can configure multiple such initContainers as well, like how we did for multi-containers pod. In that case each init container is run one at a time in sequential order.
+
+If any of the initContainers fail to complete, Kubernetes restarts the Pod repeatedly until the Init Container succeeds.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: busybox:1.28
+    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+  - name: init-mydb
+    image: busybox:1.28
+    command: ['sh', '-c', 'until nslookup mydb; do echo waiting for mydb; sleep 2; done;']
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Self Healing Applications:
+
+Kubernetes supports self-healing applications through ReplicaSets and Replication Controllers. 
+The replication controller helps in ensuring that a POD is re-created automatically when the application within the POD crashes. 
+It helps in ensuring enough replicas of the application are running at all times.
+
+Kubernetes provides additional support to check the health of applications running within PODs and take necessary actions through Liveness and Readiness Probes.
+
+In Kubernetes, liveness and readiness probes are automated diagnostic mechanisms managed by the kubelet to continuously monitor container health and manage application availability. 
+While both help maintain system reliability, they serve completely different purposes and trigger different recovery actions.
+
+Core Differences:
+Feature					Liveness Probe											Readiness Probe
+Core Question			Is the container alive?									Is the container ready to process requests?
+Action on Failure		Restarts the container.									Removes Pod from Service traffic.
+Primary Use Case		Catches deadlocks or unrecoverable freezes.				Delays traffic during app warm-up/heavy loads.
+Impact on Pod Life		Triggers container recreation.							Pod stays running but isolated from network traffic.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Deep Dive: Liveness Probes
+A Liveness Probe detects when an application has transitioned into a broken state from which it cannot recover without a restart (e.g., a deadlock where the process runs but cannot make progress).
+
+Behavior: If the liveness probe fails a consecutive number of times defined by the failureThreshold,
+Kubernetes terminates the specific container and provisions a new one based on the Pod's restartPolicy.
+
+Risk Warning: If a liveness probe checks a downstream dependency (like a database) and that database goes down, all your application pods will fail their liveness checks simultaneously. 
+This triggers a cascading boot-loop across your entire cluster. Never use liveness probes to check external dependencies.
+
+Deep Dive: Readiness Probes
+A Readiness Probe determines whether a container is fully prepared to accept network traffic.
+
+Behavior: When an application is starting up, loading large datasets, or executing database migrations, it cannot yet serve users. 
+The readiness probe stays in a failed state during this phase, preventing Kubernetes Services from routing traffic to the Pod. 
+If an active pod begins to fail its readiness probe (e.g., due to extreme load), Kubernetes temporarily isolates it until the probe succeeds again.
+
+Dependency Rule: It is perfectly safe and recommended to use readiness probes to verify required backend services or database connectivity.
+
+Mechanisms for Checking Health
+According to the Kubernetes Documentation on Probes, the kubelet can execute four types of diagnostics:
+httpGet: Performs an HTTP GET request against the container's IP. Returns success if the status code is ≥ 200 and < 400.
+tcpSocket: Tries to open a TCP connection to a specified port. Success means the port is open.
+exec: Runs a specific command inside the container. It is successful only if the command exits with a status code of 0.
+grpc: Performs a native gRPC health check for applications utilizing gRPC frameworks.
+
+Eg:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: diagnostic-probes-example
+spec:
+  containers:
+  - name: web-app
+    image: nginx:1.25
+    ports:
+    - containerPort: 8080
+    
+    # Checks if the app is frozen
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+
+    # Checks if the app can handle user traffic
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 2
+      successThreshold: 1
+      failureThreshold: 3
+
+
+A Note on Startup ProbesIf your application takes an unusually long time to initialize (e.g., several minutes), 
+a strict liveness probe might kill the container before it finishes booting. To solve this, Kubernetes offers a third probe type: the Startup Probe. 
+When defined, it disables both liveness and readiness probes until the application successfully starts up for the first time, 
+ensuring your boot sequence is never interrupted.
+
+Autoscaling:
+
+HPA -- Horizontal pod autoscaling -- adding more pods to existing service/replicaset, meaning horizontally scaling pods.
+VPA -- vertical pod autoscaling -- adding more under lying resources to the the pods/adding more nodes and such to get more 
+
+HPA:
+a native Kubernetes API resource and controller that automatically scales the number of Pod replicas in a Deployment, 
+ReplicaSet, or StatefulSet based on real-time resource utilization or custom metrics
+
+Feature			HPA (Horizontal Pod Autoscaler)						VPA (Vertical Pod Autoscaler)							KEDA (Kubernetes Event-driven Autoscaling)
+Action			Adds/removes Pod replicas.							Increases/decreases CPU/Memory size per Pod.			Scales Pods based on external event queues.
+Workload		Best for stateless apps (e.g., Web APIs).			Best for stateful apps (e.g., Databases).				Best for message brokers (e.g., Kafka, RabbitMQ).
+Disruption		No downtime; new instances spin up concurrently.	Requires a Pod restart to apply new resource limits.	Integrates with HPA to scale down to 0 when idle.
+
+
+Prerequisites for HPA
+To use HPA successfully, your cluster must meet these structural criteria:
+Metrics Server: You must install the Kubernetes Metrics Server add-on to collect system resource utilization.
+Resource Requests: Your target Pod configuration must explicitly define resources.requests for CPU or memory. 
+Without specified requests, HPA cannot calculate percentage thresholds.
+
+How HPA Works:
+The HPA controller runs inside the Kubernetes control plane and operates in a continuous control loop (checking metrics every 15 seconds by default).
+Query Metrics: The HPA queries the metrics.k8s.io API (usually supplied by the Kubernetes Metrics Server) to gather CPU and memory utilization.
+Calculate Replicas: It uses a mathematical ratio formula to determine the desired number of pods.Execute Scaling: It updates the scale subresource of the target workload (e.g., changing replicas: 2 to replicas: 5).
+
+commands:
+Create an HPA instantly:
+kubectl autoscale deployment my-web-app --cpu-percent=70 --min=2 --max=10
+
+View current status and targets:
+kubectl get hpa
+
+Inspect deep structural details and scaling events:
+kubectl describe hpa web-app-hpa
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+In place Pod resizing:
+
+VPA:
+
+
+Cluster Maintenace:
+
+In Kubernetes, cordon, uncordon, and drain are used to manage node availability for maintenance.
+cordon: Marks a node as "unschedulable". New pods will not be placed on it, but existing pods continue to run.
+kubectl cordon <node-name>
+
+drain: Safely evicts all pods from a node so they can be rescheduled elsewhere. It also automatically cordons the node.
+kubectl drain <node-name> --ignore-daemonsets
+
+uncordon: Reverses the cordon. It marks the node schedulable again so new pods can be assigned to it.
+kubectl uncordon <node-name>
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Upgrade plan:
+
+kubeadm upgrade plan
+
+Backup and restoration
+
+-- backup all config files, etcd db, persistent storage.
+-- backup all imperative and declarative resources created.
+-- backup the etcd db, before this stop kube-api server to stop any newly added resources.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Security:
+
+PKI
+TLS -- Transport Layer Security
+HTTPS is just HTTP running inside a TLS tunnel.
+
+So you need three guarantees:
+
+Confidentiality — nobody in the middle can read the data.
+Integrity — nobody can secretly modify it.
+Authentication — you're really talking to the bank, not an impostor.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Symmetric encryption — fast, but with one fatal flaw:
+
+Symmetric encryption uses one shared key for both locking (encrypt) and unlocking (decrypt). 
+Algorithms: AES, ChaCha20.
+It's excellent: extremely fast, hardware-accelerated, perfect for encrypting megabytes of traffic.
+The fatal flaw is the key distribution problem. You and the server must both have the same secret key.
+You can't use symmetric encryption to bootstrap symmetric encryption — chicken and egg.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Asymmetric encryption — solves bootstrapping, but slow
+Asymmetric (public-key) crypto uses a mathematically linked key pair: a public key and a private key. Algorithms: RSA, ECDSA, ECDH.
+what one key locks, only the other key unlocks. 
+
+uses:
+Use 1 — Encryption / secret sharing. Anything encrypted with the public key can only be decrypted with the matching private key. 
+So you can publish your public key to the entire world; anyone can encrypt a message that only you (holder of the private key) can read.
+
+Use 2 — Digital signatures (this is the one most freshers miss). You take a hash of a document and process it with your private key to produce a signature. 
+Anyone with your public key can verify that signature. Since only you have the private key, a valid signature proves you produced it and proves the document wasn't altered. 
+This is the reverse direction of encryption, and it's what authentication is built on.
+
+The catch: asymmetric math (big-number exponentiation, elliptic curves) is hundreds to thousands of times slower than symmetric. 
+Encrypting a video stream with RSA would be painfully slow.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Here's the elegant trick TLS uses, and the direct answer to your "why symmetric AND public/private" question:
+
+Use the slow asymmetric crypto once, at the start, only to securely agree on a symmetric session key. 
+Then use the fast symmetric crypto for all the actual data.
+Best of both worlds: asymmetric solves the bootstrapping/key-distribution problem; symmetric gives you speed for the bulk traffic.
+
+The remaining hole: identity → digital certificates
+Asymmetric crypto lets you encrypt to "the public key at the other end." 
+But how do you know that public key actually belongs to yourbank.com and not to an attacker sitting in the middle who handed you their public key? 
+Without solving this, an attacker can do a man-in-the-middle attack: pretend to be the bank to you, and you to the bank.
+
+You need to bind a public key to a verified identity. That binding is a digital certificate (format: X.509). 
+A certificate contains, at minimum: the subject (e.g. the domain name), the subject's public key, an issuer, a validity period, 
+and — critically — a digital signature from a trusted Certificate Authority (CA).
+
+The CA signs the certificate using the CA's own private key. So the certificate is essentially the CA vouching: "I verified that this public key belongs to yourbank.com." 
+Anyone holding the CA's public key can verify that signature and trust the binding.
+
+Putting it all together — the TLS handshake
+When you hit https://..., before any real data flows, TLS runs a handshake. Conceptually (this is the modern TLS 1.3 flow, which finishes in a single round trip):
+
+Client Hello — your browser says hi, lists the cipher suites and TLS versions it supports, and (speculatively) sends its Diffie-Hellman public key share.
+Server Hello — the server picks the cipher suite and sends its own DH public key share. At this point both sides can already compute the shared secret.
+Certificate + CertificateVerify — the server sends its certificate chain, and a signature (made with its private key) proving it actually holds the private key matching the cert. Your browser validates the chain against its trusted roots and checks the domain.
+Key derivation — both sides combine the DH shares into the same shared secret, then derive the symmetric session keys from it.
+Finished — both sides send an encrypted, authenticated "Finished" message that also verifies the whole handshake wasn't tampered with.
+Application data — from here, everything is encrypted with fast symmetric keys, protected by AEAD (which gives confidentiality and integrity in one step).
+
+
+So in one handshake you get all three guarantees: authentication (certificate + signature), key agreement (Diffie-Hellman), and then fast, 
+integrity-protected confidentiality (symmetric AEAD).
+
+ PKI gives you trust → asymmetric crypto gives you authentication + key agreement → symmetric crypto gives you fast, protected data transfer. Each layer exists only because the layer below it left a gap.
+ 
+ 
+ Signing requests and K8s groups and access to those groups:
+ CSR: certificate signing request
+ users
+ access to those groups, like admin,
+ create a signing request,
+ approved by CA's private key
+ 
+ All k8s components will have private and public keys, they need this to authenticate to diff k8s component and to estblish trust
+ clinet and server keys and certs
+ 
+ 
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------
+kubeconfig:
+- a YAML configuration file that stores the cluster information, user credentials, and authentication contexts required to securely connect to a Kubernetes cluster. 
+- The command-line tool kubectl relies on this file to locate the target cluster and communicate with its API server.
+
+Default File Location:
+By default, kubectl automatically looks for a file named config inside the .kube directory of your home profile:
+
+Linux/macOS: ~/.kube/config
+
+A kubeconfig file is structured around three key concepts:
+
+clusters: Specifies the API server endpoints, names, and certificate authorities (certificate-authority-data) of the Kubernetes environments you want to access.
+users: Defines the identities and authentication details (such as client certificates, tokens, or auth plugins) used to log in.
+contexts: Ties a specific user to a specific cluster, optionally mapping a default namespace. It allows you to quickly shift identities across separate infrastructure.
+current-context: Sets the default context that kubectl will target for all incoming commands.
+
+Eg:
+
+apiVersion: v1
+kind: Config
+preferences: {}
+
+clusters:
+- cluster:
+    certificate-authority-data: <LS0t...base64-ca...> (or) location to the file
+    server: https://192.168.1.100:6443
+  name: production-cluster
+
+users:
+- name: cluster-admin
+  user:
+    client-certificate-data: <LS0t...base64-cert...>
+    client-key-data: <LS0t...base64-key...>
+
+contexts:
+- context:
+    cluster: production-cluster
+    user: cluster-admin
+    namespace: default
+  name: prod-admin-context
+
+current-context: prod-admin-context
+
+
+Managing Multiple Configuration Files:
+If you are managing different environments, you are not forced to dump everything into a single file. Kubernetes provides a precedence order to manage alternate paths:
+
+1. Command Line Flag (Highest Precedence)
+
+kubectl get pods --kubeconfig=/path/to/custom-config.yaml
+
+2. Environment Variable:
+Define the KUBECONFIG variable to set an alternate file path for your current terminal session. You can even list multiple files separated by colons (:) to merge them dynamically:
+
+export KUBECONFIG=~/.kube/config:~/.kube/dev-config.yaml
+
+3. Default File (Lowest Precedence):
+If neither the flag nor the environment variable is passed, kubectl falls back to the default ~/.kube/config file
+
+
+
+View Active Configurations: Displays your active, merged settings.
+kubectl config view
+
+
+Show Active Context: Check which cluster and identity you are currently pointed to.
+kubectl config current-context
+
+Switch Environments: Seamlessly pivot to a separate context.
+kubectl config use-context <context-name>
+
+Run this to see all contexts configured in your kubeconfig:
+kubectl config get-contexts
+
+======================================================================================================================================================
+
+API Groups:
+
+At the core of Kubernetes’ operational framework is its API, which facilitates communication between users, different parts of the cluster, and external components. 
+The API is meticulously organized into groups and versions to manage the lifecycle of diverse resources efficiently.
+
+API Groups in Detail:
+Kubernetes API groups are essentially collections of resources that are logically related.
+These groups help organize the API by function, improving discoverability and scalability of resources. 
+The API groups are represented in the API URL as /apis/<group>/<version>. 
+
+
+There are two main types of API groups:
+Core Group: Also known as the legacy group, it is accessed via /api/v1 and includes fundamental resources like Pods, Services, and Namespaces.
+Named Groups: These cover specific areas not included in the core group, such as apps for application-related resources, batch for batch processing tasks, and extensions for additional features.
+
+Each group is then further subdivided into versions to manage the evolution of API resources over time.
+
+
+API Versions and Their Significance
+Kubernetes API versions signify the stability and support level of features, using a prefix (alpha, beta, and stable) followed by a version number. This nomenclature is critical for understanding the lifecycle of Kubernetes features:
+
+--- Alpha (v1alphaX): Experimental features that are under active development and may change without notice. 
+They are disabled by default and not recommended for production use.
+--- Beta (v1betaX): More stable than alpha, beta features are enabled by default and are on their path to becoming stable. 
+They are generally well-tested but might receive further modifications.
+--- Stable (vX): These versions are deemed stable and safe for production use. Backward compatibility is maintained across releases, ensuring long-term support.
+
+Discovering API Resources:
+Begin by exploring the available API resources and their groups in your cluster with 
+**********     kubectl api-resources
+
+This command lists all resources, their short names, API groups, and whether they are namespaced.
+
+Kubernetes API Groups logistically categorize and separate the massive library of Kubernetes resources into manageable, versioned sets of functionalities. 
+They prevent the API from becoming a single monolithic block, allowing Kubernetes to easily evolve, deprecate features, and support third-party custom extensions without breaking core functionality.
+
+The structural hierarchy of the Kubernetes API is logically mapped straight into its HTTP REST paths.
+
+                  [ API Server Root ]
+                     /           \
+         [/api (Core Group)]    [/apis (Named Groups)]
+                /                     \
+             [v1]             [apps]   [batch]   [networking.k8s.io]
+              /                 /         \               \
+          [pods]             [v1]        [v1]            [v1]
+            /                 /           /                \
+     (pod-instance)    [deployments]   [jobs]          [ingresses]
+                             /            /                \
+                     (deploy-instance) (job-instance)  (ingress-instance)
+					 
+
+Root Endpoints: The starting points for API discovery.
+/api – Routes to the Core API group.
+/apis – Routes to all Named API groups.
+API Group: The broader category of features (e.g., apps, batch, networking.k8s.io).
+API Version: The stability tier of that group (e.g., v1alpha1, v1beta1, v1).
+Resource / Kind: The specific template or object type (e.g., pods, deployments, services).
+Namespace Scope: Most resources live inside a logical namespace, further isolating data (e.g., /namespaces/default/pods/my-pod).
+
+
+1. In YAML Application Manifests
+When declaring an object, you define the target API group inside the apiVersion block.
+
+apiVersion: v1 # "v1" implies the Core group
+kind: Pod
+metadata:
+  name: web-pod
+
+
+Example of a Named group resource (Group prefix included):
+apiVersion: apps/v1 # Group is "apps", Version is "v1"
+kind: Deployment
+metadata:
+  name: web-deployment
+
+
+kubectl api-resources | grep deployments
+# Output will show "deployments" belongs to the "apps" group
+
+
+Advanced Topics: Custom Resources and API Extensions
+Kubernetes’ extensibility allows for defining custom resources (CRs) through Custom Resource Definitions (CRDs), 
+enabling users to create and manage their own APIs within the Kubernetes ecosystem.
+
+CRDs allow you to define custom APIs without writing any code. Here’s a simple example of a CRD:
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: myresources.mydomain.com
+spec:
+  group: mydomain.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: myresources
+    singular: myresource
+    kind: MyResource
+    shortNames:
+    - mr
+
+Once defined, you can create custom resources using this CRD like any other Kubernetes resource.
+
+Authorization:
+
+types:
+Node: a special-purpose authorization mode in Kubernetes that specifically scopes and restricts API requests made by kubelets
+-- It ensures that worker nodes only access data necessary for the workloads explicitly scheduled to them, preventing a compromised node from accessing cluster-wide information
+
+ABAC: Attribute based access control
+-- it is effectively deprecated in modern clusters and heavily replaced by Role-Based Access Control (RBAC)
+-- assign users/groups create/read/update such persmission individully.
+-- have to create a config file and specify these details and load it to apiserver.
+-- if any changes are to be made to config file, then restart the kubeapiserver, so it can read the config again
+-- an authorization mode that configures access rights to users and service accounts through policies based on combined attributes
+-- ABAC requires direct file-system modifications and API server restarts to apply changes
+-- Policies are written into a file using the JSON Lines (.jsonl) format, where each line is a single JSON object representing an explicit permission rule.
+eg:
+{"apiVersion": "abac.authorization.kubernetes.io/v1beta1", "kind": "Policy", "spec": {"user": "alice", "namespace": "frontend", "resource": "pods", "readonly": true}}
+{"apiVersion": "abac.authorization.kubernetes.io/v1beta1", "kind": "Policy", "spec": {"user": "kubelet", "resource": "pods", "readonly": false}}
+To enforce ABAC, you must pass specific startup flags to your master node's kube-apiserver configuration
+-- Set the --authorization-mode flag to include ABAC.
+-- Specify the filepath using --authorization-policy-file=/etc/kubernetes/abac-policy.jsonl
+
+
+RBAC: Role based access control
+-- the standard authorization mechanism in Kubernetes that determines whether a specific user or application is allowed to perform a requested action on a cluster resource
+-- It acts as a gatekeeper immediately following user authentication, evaluating policies dynamically via the rbac.authorization.k8s.io API group
+-- Subjects (Who) are granted permissions via Roles/ClusterRoles (What) through explicit links called Bindings (How)
+
+Kubernetes RBAC is driven by four key API objects, split into namespace-scoped and cluster-scoped variants:
+
+Role --- Namespace-scoped --- Defines a set of additive permissions (rules) limited to a specific namespace.
+ClusterRole --- Cluster-scoped --- Defines permissions for cluster-wide objects (e.g., nodes) or namespaced resources across all namespaces.
+RoleBinding --- Namespace-scoped --- Attaches a Role or ClusterRole to subjects within a specific namespace.
+ClusterRoleBinding --- Cluster-scoped --- Attaches a ClusterRole to subjects across the entire Kubernetes cluster.
+
+RBAC policies are strictly additive, meaning there are no "deny" rules—if an action is not explicitly listed, it is blocked by default. Every authorization rule maps out three components:
+
+apiGroups: The group of the targeted resource (e.g., "apps" for Deployments, or "" for core objects like Pods and Secrets).
+resources: The type of objects being controlled (e.g., ["pods"], ["services"]).
+verbs: The explicit operations allowed (e.g., ["get", "list", "watch", "create", "delete"]).
+
+Namespace-Level Access Control (Role & RoleBinding):
+The following configuration grants a user named john read-only privileges exclusively inside the default namespace
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # Core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"] # Read-only verbs
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods-binding
+  namespace: default
+subjects:
+- kind: User
+  name: john
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+best practices:
+
+Principle of Least Privilege: Grant only the essential verbs and resources required by an engineering role or app.
+Isolate Applications via ServiceAccounts: Avoid letting applications use the default ServiceAccount. Provision a dedicated ServiceAccount per app to isolate workload boundaries.
+Prefer RoleBindings Over ClusterRoleBindings: Restrict the operational blast radius by tying roles to dedicated namespaces whenever possible.
+Target Specific Resources: Use resourceNames within your role definitions to strictly restrict editing to a single, critical Secret or ConfigMap.
+Audit with Can-I Flags: Use kubectl auth can-i <verb> <resource> --as=<user> to troubleshoot and verify permissions before deployment.
+
+
+WebHook:
+-- is an access control mode where the kube-apiserver queries a remote, 
+external HTTP REST service via a synchronous callback to determine whether a user has permissions to execute a requested API action.
+
+Always allow: By defauly always enabled 
+Always Deny: it will deny all the permissions
+
+******** You can specify multiple such authorization methods while booting/creating the apiserver, specify this in "--authorization-mode flag"
+
+RBAC: commands:
+kubectl get roles
+kubectl get rolebidings
+kubectl describe role developer
+
+auth checking:
+kubectl auth can-i create deployments -- answer is yes/no
+kubectl auth can-i delete nodes
+
+to impersonate other user:
+
+kubectl auth can-i create deployements --as dev-user
+
+kubectl auth can-i create deployements --as dev-user -n namespace
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+cluster role and cluster rolebindings
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Service accounts:
+-- kubectl get serviceaccount
+-- kubectl describe serviceaccount default
+-- kubectl create serviceaccount dashboard-sa
+-- kubectl create token dashboard-sa --duration 2h
+
+by default we will have a service account created by k8s, every object is associated with a service account.
+-- A Kubernetes ServiceAccount (SA) is an identity used by applications and processes running inside Pods to authenticate with the Kubernetes API server.
+-- While User Accounts are for humans, ServiceAccounts act as machine identities, 
+allowing Pods to securely interact with cluster resources or external services.
+
+
+-- When a Pod is launched, it is assigned a ServiceAccount (either the default one or one you specify).
+-- The Kubelet automatically provisions an authentication token, a namespace label, and the cluster's CA certificate, mounting them directly into the Pod's filesystem
+Location: /var/run/secrets/kubernetes.io/serviceaccount/
+Token: The JSON Web Token (JWT) used as a bearer token to authenticate with the Kubernetes API.
+ca.crt: The root certificate used to verify the API server's identity
+
+application inside the Pod makes a curl or kubectl call to the cluster, 
+this token identifies the caller as system:serviceaccount:<namespace>:<serviceaccount-name>
+
+Attach SA to pod:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app-pod
+  namespace: production
+spec:
+  serviceAccountName: backend-app-sa # <-- Link it here
+  containers:
+  - name: my-app-container
+    image: my-app-image:latest
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Image security:
+-- if your using private reg to pull images, you may need to authenticate.
+-- in order to authenticate to docker repo and get the images, you need creds, we store these creds in secrets, and give in this secret in the YMAL manifest.
+-- To configure image pull secrets for a container, you must define the imagePullSecrets array directly inside the Pod spec section of your Kubernetes manifest
+
+-- 1. Create the Secret FirstBefore referencing it in your container configuration, 
+create a docker-registry secret in the same namespace as your workload using the Kubernetes CLI (kubectl):
+
+kubectl create secret docker-registry my-registry-secret \
+  --docker-server=https://docker.io \
+  --docker-username=<your-username> \
+  --docker-password=<your-password> \
+  --docker-email=<your-email>
+
+2. Configure the spec Section:
+Add the imagePullSecrets array under the spec block of either a standalone Pod or the template.spec block of a Deployment.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-container-pod
+  namespace: default
+spec:
+  # 1. Define the secret name here under the Pod spec
+  imagePullSecrets:
+    - name: my-registry-secret
+  containers:
+    - name: private-app
+      image: docker.io/yourusername/private-image:latest
+
+
+Key Rules:
+Namespace Alignment: Secrets must exist in the same namespace as the Pod.
+Array Usage: imagePullSecrets is a list, allowing for multiple secret references.
+Placement: It must be in the Pod spec (spec: or template.spec:), not within the container definition.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+A Kubernetes NetworkPolicy:
+is a native API resource that configures firewall rules at the Pod level to control Layer 3 and Layer 4 network traffic within a cluster.
+-- By default, Kubernetes networking uses a "default-allow" model where every Pod can freely communicate with any other Pod across all namespaces. 
+--  Applying a NetworkPolicy isolates the targeted Pods, shifting them to a "default-deny" state where all traffic is blocked unless it explicitly matches an allow rule
+
+
+The Enforcement Catch:
+-- Kubernetes defines the configuration schema for NetworkPolicies, but does not enforce them out of the box. 
+-- Enforcing these rules requires a Container Network Interface (CNI) plugin or network provider that supports policy enforcement—such as Project Calico, Cilium, or cloud-specific providers.
+-- If you apply a policy using a basic CNI like Flannel or kindnet, the cluster will accept the YAML resource but silently ignore the traffic restrictions
+
+-- Core Anatomy of a NetworkPolicy:
+NetworkPolicies use label selectors to identify which Pods to isolate and which sources or destinations are permitted to communicate with them.
+podSelector: Decides which Pods in the current namespace are governed by this policy. 
+An empty object ({}) matches all Pods in the namespace.
+policyTypes: Explicitly states if the policy regulates inbound traffic (Ingress), outbound traffic (Egress), or both.
+ingress (Inbound Rules): Defines allowed sources via from.
+egress (Outbound Rules): Defines allowed destinations via to
+
+Target Identification Layers:
+Traffic sources and destinations can be targeted using three distinct selection models:
+
+podSelector: Targets specific workloads in the same namespace using their Pod labels.
+namespaceSelector: Matches entire namespaces by their assigned labels.
+ipBlock: Restricts traffic to or from external IP ranges or CIDR notation blocks (e.g., 10.0.0.0/16)
+
+1. The Production Baseline: 
+Default Deny All: Security best practices recommend establishing a zero-trust architecture by blocking all ingress and egress traffic by default within a namespace.
+-- This forces applications to explicitly request communication allowances
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  podSelector: {} # Matches all pods in the namespace
+  policyTypes:
+  - Ingress
+  - Egress
+
+
+2. Target Isolation: Isolating a Database Tier
+This recipe secures a MySQL database by blocking everything except incoming TCP connections on port 3306 originating from Pods labeled role: backend
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-access
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      role: database # Applies this policy to database pods
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: backend # Allows traffic from backend pods
+    ports:
+    - protocol: TCP
+      port: 3306
+
+kubectl get networkpolicies -- to fetch network policies
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Kubectx:
+
+With this tool, you don't have to make use of lengthy “kubectl config” commands to switch between contexts. 
+This tool is particularly useful to switch context between clusters in a multi-cluster environment.
+
+To list all contexts:
+kubectx
+
+
+To switch to a new context:
+kubectx <context_name>
+
+
+To switch back to previous context:
+kubectx -
+
+
+To see current context:
+kubectx -c
+
+
+Kubens:
+This tool allows users to switch between namespaces quickly with a simple command.
+
+Syntax:
+
+To switch to a new namespace:
+kubens <new_namespace>
+
+
+To switch back to previous namespace:
+kubens -
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Kubernetes storage:
+
+CSI:
+
+The Kubernetes Container Storage Interface (CSI) is a standardized, out-of-tree plugin system that allows Kubernetes to connect with diverse block and file storage solutions. 
+It decouples storage drivers from the core Kubernetes codebase, making it easy to deploy storage systems without modifying Kubernetes itself
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Volumes in k8s:
+
+-- Volume is an abstraction layer that provides a directory accessible to all containers within a single Pod to share and persist data beyond individual container lifecycles.
+-- Containers have ephemeral file systems, meaning any data is permanently lost if a container crashes or restarts. 
+Kubernetes volumes solve this by decoupling storage from the container.
+
+Classification of Volumes:
+Kubernetes volumes are broadly grouped into two categories based on their lifecycle:
+
+1. Ephemeral Volumes:
+These volumes are directly tied to the lifecycle of the Pod. They are created when the Pod starts up and are completely destroyed when the Pod is deleted.
+emptyDir: An initially empty directory stored on the host node's local disk or RAM. It survives container crashes but is wiped when the Pod terminates.
+configMap / secret: Used to inject configuration data or sensitive keys directly into a Pod as files.
+downwardAPI: Makes Pod and cluster information (like labels or namespace) available to the container as files.
+
+2. Persistent Storage (PV and PVC):
+For databases and stateful workloads, storage must survive Pod deletions, node failures, and cluster restructuring. 
+This utilizes three separate cluster resources:
+PersistentVolume (PV): A cluster-level storage resource provisioned by an administrator or a cloud provider (e.g., AWS EBS, Azure Disk, NFS). Its lifecycle is independent of any individual Pod.
+PersistentVolumeClaim (PVC): A request for storage by a user or developer. It acts like a "ticket" that specifies capacity and access permissions, matching and binding to an available PV.
+StorageClass: An object that automates provisioning. Instead of an admin manually pre-creating PVs, a StorageClass dynamically spins up storage backend resources on-demand when a user requests a PVC.
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storage-example-pod
+spec:
+  containers:
+  - name: web-container
+    image: nginx:latest
+    volumeMounts:
+    - name: shared-data-volume
+      mountPath: /usr/share/nginx/html
+  volumes:
+  - name: shared-data-volume
+    emptyDir: {}
+
+
+PV:
+A PersistentVolume (PV):
+in Kubernetes is a cluster-level storage resource provisioned by an administrator (or dynamically via a StorageClass) that exists independently of any individual Pod's lifecycle.
+ 
+While standard Kubernetes containers and Pods are ephemeral, data stored inside a PV remains completely safe even if the Pod crashes, restarts, or moves to a different cluster node.
+-- PersistentVolume (PV): The physical or network-attached data warehouse (e.g., AWS EBS, Azure Disk, NFS, or local disk). 
+It represents the actual raw storage pool available in the cluster.
+
+commands:
+
+kubectl get persistentVolume
+kubectl describe persistentVolume pv-name
+
+
+1. Static Provisioning (Manual):
+A cluster admin manually creates a real storage disk and points a PersistentVolume manifest to it.
+A developer deploys a PersistentVolumeClaim requesting storage.
+The control plane matches and binds the PVC exclusively to the static PV.
+
+2. Dynamic Provisioning (Automatic):
+A cluster admin sets up a StorageClass targeting a specific cloud or network plugin.
+A developer deploys a PersistentVolumeClaim referencing that specific storageClassName.
+The cluster automatically generates a corresponding matching backend storage device and a new PersistentVolume on the fly.
+
+🔒 Access Modes:Every PV specifies how it can be mounted to host nodes, restricted by the underlying storage hardware capabilities:
+ReadWriteOnce (RWO): The volume can be mounted as read-write by a single node at a time (standard for block storage like cloud disks).
+ReadOnlyMany (ROX): The volume can be mounted as read-only by many nodes simultaneously.
+ReadWriteMany (RWX): The volume can be mounted as read-write by many nodes (requires shared file storage like NFS or CephFS).
+ReadWriteOncePod (RWOP): The volume can be mounted as read-write by a single Pod across the entire cluster
+ 
+♻️ Reclaim Policies:
+When an application is decommissioned and its PVC is deleted, the PV's persistentVolumeReclaimPolicy determines the fate of the remaining data:
+Retain: The PV remains intact, but enters a Released state. No other PVC can claim it until an administrator manually cleans the underlying files and re-creates the resource.
+Delete: The volume is completely erased, and the underlying physical infrastructure asset (like an AWS EBS volume) is permanently wiped and deleted automatically.
+
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dynamic-pv-example
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: "/mnt/data"
+
+Using PVCs in Pods
+Once you create a PVC use it in a POD definition file by specifying the PVC Claim name under persistentVolumeClaim section in the volumes section like this:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: myfrontend
+      image: nginx
+      volumeMounts:
+      - mountPath: "/var/www/html"
+        name: mypd
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: myclaim
+
+The same is true for ReplicaSets or Deployments. Add this to the pod template section of a Deployment on ReplicaSet.
+
+Storage Class:
+
+-- Kubernetes StorageClass (SC) is a cluster-level API resource that enables dynamic volume provisioning by abstracting the underlying storage platform. 
+Instead of cluster administrators manually pre-provisioning storage disks (static provisioning), a StorageClass acts as a profile blueprint. 
+When a developer submits a PersistentVolumeClaim (PVC) requesting a specific StorageClass, Kubernetes automatically provisions the underlying block or file storage on demand.
+
+Core Components of a StorageClassA standard StorageClass manifest contains four foundational configurations:
+Provisioner: Specifies the backend storage plug-in or CSI driver responsible for creating the volume.
+Parameters: Key-value pairs that configure specific performance, tiering, or filesystem options for the chosen provisioner.
+Reclaim Policy: Dictates whether the underlying storage disk is kept (Retain) or wiped (Delete) when the PVC is deleted.
+Volume Binding Mode: Controls exactly when the persistent volume should be provisioned and bound (Immediate vs WaitForFirstConsumer)
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-premium-storage
+provisioner: ://aws.com
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+parameters:
+  type: gp3
+  iops: "3000"
+
+Topology aware scheduling:
+local volume as pv
+raw block
+resize the allocated pv
+
+In-line volumes:
+ephemeral volumes: configmap, secret, downwardAPI
+
+CSI:
+volume snapshot:
+
+
+Networking:
+
+Pod networking
+IP addresses and port firewall between all the k8s components
+
+IPAM:
+Weave Net (often just called Weave) is an open-source CNI plugin that creates a mesh overlay network and includes its own built-in IP Address Management (IPAM) for Kubernetes. 
+Weave IPAM automatically allocates unique IP addresses from a predefined pool to Pods and reclaims them upon deletion.
+
+CNI: Container Network Interface
+
+calico, flannel,
+
+Services: lvl4 LB
+endpoints
+endpoint slices
+
+kubectl get services (To find the name of your Service)
+kubectl get endpoints (To see the ready and not-ready endpoints connected to your Services)
+kubectl get endpointslices (To see the more modern, scalable tracking lists)
+
+Ingress:
+paths, services, http/level 7 LB
+Headless services
+statefull sets

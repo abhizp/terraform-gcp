@@ -119,7 +119,7 @@ RAID 6 :
 
 can tolerate upto 2 disk failure.
 2 parity blocks distributed accross disks.
-data can be recreated through parity if 2 disks fail.
+data can be recreated through parity if 2 disks fail.	
 R/W performance increased
 
 Hybrid RAID :
@@ -262,3 +262,195 @@ Convert a pServer into a VM:
 Right sizing VM's is important.
 do not over provision
 
+
+storage/data device types in linux:
+character device  -- stream of data, in/out bidirectional, not all at once, one by one in a stream, no buffer, no cache
+block device -- all at once, large chunck, with buffer and cache, fast, no metadata, filesystem often built on block storage
+
+device commands:
+lsusb
+lspci
+lscpu
+dmidecode
+
+cpu:
+mpstat
+top
+htop
+ps -ef
+uptime -- Load average
+
+memory:
+vmstat
+free
+lsmem
+
+lvm related:
+vgs
+pvs
+lvs
+
+Partitions:
+MBR -- BIOS
+
+GPT(GUID PT) -- UEFI
+
+FUSE: filesystem in user space
+
+The name "Filesystem in Userspace" means exactly that — the code that implements the filesystem lives in userspace. 
+That's what's revolutionary. Before FUSE, that was impossible without writing kernel code.
+
+raid:
+Raid 0
+raid 1
+raid 5
+
+File related commands:
+file file/folder_name
+
+xargs -- to extend the command, as pass the piped o/p as std i/p to command
+
+eg:
+find /u01/app/oracle/admin/PR341/diag/rdbms/pr341/PR3412/incident +mmin +2 | xargs rm -rf >/dev/null 2>&1
+
+stat -- to get stat of a file
+
+block related command:
+
+blkid -- to list the block level details of the the device mounted on the system, give you uuid, block size, type, partid
+
+lsscsi -- to list all attached scsi devices
+
+lsblk -- to list all the block devices
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+fdisk command:
+
+-- fdisk command in Linux is a powerful, menu-driven command-line utility used to view, create, delete, and modify partitions on hard drives and storage devices
+-- Because modifying partition tables can destroy existing data, you must always run fdisk with root privileges using sudo
+
+Common fdisk CLI Arguments:
+sudo fdisk -l: Lists all available storage drives and their existing partition layouts.
+sudo fdisk -l /dev/sdX: Displays the partition layout of one specific storage drive (e.g., /dev/sda).
+sudo fdisk /dev/sdX: Opens the specified drive in interactive command mode.
+
+parted -- same as fdisk but advanced
+
+Filesystem commands:
+
+mkfs.<file_system_type> -- to create a file system on a block/partition.
+mkfs.ext4 /dev/sda2 -- eg to create a ext4 FS.
+
+dumpe2fs:
+The dumpe2fs command in Linux prints the superblock and blocks group information for ext2, ext3, and ext4 filesystems.
+-- It is a command-line tool included in the e2fsprogs package that helps system administrators inspect filesystem layout, analyze metadata, and troubleshoot corruption
+
+⚠️ Critical Rule Before Using:
+Always unmount your partition before running dumpe2fs. If you run it on a mounted filesystem, the printed metadata can be old, out of sync, or completely inconsistent
+
+dumpe2fs [options] device
+sudo dumpe2fs /dev/sda1
+
+Common Command Options:
+-h: Displays only the superblock information and skips the overwhelming block group descriptor details. This is the most popular way to use the command.
+-b: Prints only the blocks that are marked or reserved as bad in the filesystem.
+-f: Forces dumpe2fs to display the data even if the filesystem has feature flags that the tool doesn't fully recognize.
+-g: Displays group descriptor details in a machine-readable, colon-separated value configuration.
+-o superblock=block: Forces the tool to use a specific backup superblock value when examining a heavily corrupted filesystem
+
+e2fsck:
+The Linux e2fsck command is a dedicated system utility used to check and repair ext2, ext3, and ext4 filesystems.
+It serves as the target backend tool when running the general fsck command on an ext-family partition
+
+⚠️ Critical Safety Rule:Never run e2fsck on a mounted (active) filesystem. 
+Checking a live, active filesystem can cause severe, irreversible data corruption because data blocks shift during the check. Always unmount the storage drive first.
+
+sudo e2fsck [options] /dev/sdXN
+
+Useful Command Options:
+-p (Preen): Automatically fixes safe, minor errors without asking for user permission.
+-y (Yes): Force-answers "yes" to all interactive repair prompts. Use with caution.
+-n (No): Opens the filesystem as read-only. It acts as a risk-free test run.
+-f (Force): Forces a full structural scan even if the system flags the drive as "clean".
+-c (Bad blocks): Searches the drive for hardware-level bad blocks and flags them to prevent future data loss.
+
+
+To safely analyze an external or non-root block device, unmount it before starting the diagnostic check:
+sudo umount /dev/sdb1
+sudo e2fsck -v /dev/sdb1
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+tune2fs:
+
+-- The tune2fs command in Linux allows system administrators to adjust various tunable parameters on ext2, ext3, and ext4 filesystems.
+-- It is a powerful utility for fine-tuning performance, changing filesystem traits, and configuring maintenance intervals without reformatting the storage drive
+
+Because tune2fs modifies low-level data structures, you must run it with sudo or root privileges.
+
+sudo tune2fs [options] device
+
+[options]: The flags used to view or change specific filesystem behaviors.
+device: The target partition path (e.g., /dev/sda1), or its UUID / LABEL
+
+1. View Filesystem Superblock Information
+To see the full configuration layout of a filesystem (such as block size, mount count, and feature flags), use the -l option:
+
+sudo tune2fs -l /dev/sda1
+
+
+2. Change the Filesystem Volume Label
+You can set a human-readable name (label) for your partition, making it easier to reference in /etc/fstab:
+
+sudo tune2fs -L "BackupDrive" /dev/sda1
+
+4. Set Maximum Mount Counts Before a Check:
+You can enforce a automatic integrity scan (fsck) after a partition has been mounted a specific number of times:
+
+sudo tune2fs -c 30 /dev/sda1
+
+To disable checking based on the number of mounts entirely, set the count value to 0 or -1.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+fsck:
+
+The fsck (File System Consistency Check) command in Linux is a powerful system utility used to check, verify, and repair structural inconsistencies in filesystems.
+-- It acts as a wrapper that automatically calls filesystem-specific checkers (like e2fsck for ext4) depending on the target drive
+-- CRITICAL WARNING: Never run fsck on a mounted (currently active) filesystem. Doing so will likely cause severe, 
+permanent data corruption because the filesystem metadata changes while the tool is scanning it. Always unmount the target drive first.
+
+Option			Action Description
+-n: Dry run mode; answers "no" to all prompts and only reports errors without modifying data.
+-y: Auto-repair all mode; answers "yes" to all prompts and automatically fixes found issues.
+-p: Safe auto-repair mode; automatically fixes minor errors that do not risk data loss.
+-f: Force check; forces a full scan even if the system marks the partition as completely clean.
+-C: Displays a real-time progress bar (primarily supported on ext2, ext3, and ext4).
+-A: Scans all filesystems configured inside your /etc/fstab configuration file.
+
+mdadm:
+
+The mdadm command (Multiple Device Administration) is the standard Linux command-line utility used to create, manage, and monitor software RAID arrays.
+-- It interacts directly with the Linux kernel's mdraid driver to pool multiple physical storage disks into a single logical volume for redundancy, speed, or both
+
+The mdadm manual page defines several major operation modes using specific flags:
+--create (-C): Build a brand new array with dedicated superblocks on each drive.
+--assemble (-A): Re-link existing parts of a previously made array into an active storage volume.
+--manage: Add new spare drives or mark active drives as failed.
+--grow (-G): Change the physical size, layout, or RAID level of an active array.
+--stop: Deactivate an array and free up all associated system resources. 
+
+View all active arrays and live rebuilding progress:
+cat /proc/mdstat
+
+Create a RAID 1 (Mirroring): 
+sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb /dev/sdc
+
+Simulate/Mark a drive as failed: Tell the system a drive is broken:
+sudo mdadm /dev/md0 --fail /dev/sdb
+
+To wipe a RAID volume entirely, follow these structural steps sequentially:
+sudo umount /mnt/raidlocation                 # 1. Unmount the filesystem
+sudo mdadm --stop /dev/md0                   # 2. Stop the array
+sudo mdadm --zero-superblock /dev/sdb /dev/sdc # 3. Erase the RAID metadata blocks

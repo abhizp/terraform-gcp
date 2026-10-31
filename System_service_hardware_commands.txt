@@ -26,3 +26,52 @@ systemctl daemon-reload
 
 
 
+lsmod -- lists all the currently loaded modules on kernel
+
+/usr/lib/modules/ is where kernel modules are stored in many modern Linux distributions
+
+insmod /usr/lib/<module-name> -- to insert a module into kernel
+rmmod to remove module
+
+modinfo <kernel-module> -- gives out all the info about kernel module
+modprobe <kernel-module> -- latest version of loading module, better and efficient
+
+sysctl: command in Linux is a powerful utility used to view, modify, and manage kernel parameters at runtime
+It acts as an interface to the virtual file system located at /proc/sys/, allowing system administrators to optimize networking, 
+manage virtual memory, and adjust security settings without restarting the operating system.
+
+sysctl [options] [variable[=value]]
+
+sysctl -a -- Viewing All Parameters
+
+
+to save all the configs permanent -- sudo nano /etc/sysctl.conf
+
+
+ssh-keygen
+ssh-copy-id
+ssh-add
+
+/etc/config -- ssh_config, sshd_config,
+
+/.ssh/authorized_key, known_hosts, config
+
+port forwarding
+
+pkuser:
+
+The pkexec (PolicyKit Execute) command is a Linux command-line tool that allows an authorized user to execute a program as another user, 
+most commonly as the administrative superuser (root)
+
+selinux:
+
+Security-Enhanced Linux (SELinux) is a Linux kernel security module that provides Mandatory Access Control (MAC). 
+Unlike traditional file permissions (Discretionary Access Control) where users govern access, SELinux enforces strict, 
+administrator-defined policies. Even the root user is constrained
+
+
+SELinux operates in one of three modes:
+Enforcing: The default, secure mode where all unauthorized actions are actively blocked and logged.
+Permissive: SELinux policies are evaluated, and violations are logged, but the actions are not actively blocked. This is typically used for troubleshooting.
+Disabled: SELinux is entirely turned off, leaving the system protected only by standard Linux permissions
+

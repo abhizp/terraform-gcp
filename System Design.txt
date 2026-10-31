@@ -16,7 +16,7 @@ Memory (RAM):
 -- while processing data, the RAM stores the data which is needed to be processed, the bigger the RAm the more faster the data processes.
 -- these are also disks but are way faster than storge disks, they read/write data at 5000mb/s.
 -- it holds data structure, variable and application data which are currently in use or that are gonna be processed.
--- volatile memort, data is not persistent, power off data gone.
+-- volatile memory, data is not persistent, power off data gone.
 
 ROM ( read only memory)
 -- non-volatile type of computer memory that permanently stores data and instructions needed for a device to start up, like the BIOS.
@@ -31,8 +31,9 @@ Cache:
 -- l3 -- Slower than L1 and L2, but much faster than RAM and the largest of cache, Typically a single, large cache shared among all CPU cores on the processor chip
        Used for data that is less likely to be needed immediately but may still be accessed occasionally, and helps with inter-core communication.
 -- frequently used data is stored in cache, it reduces average time to look/access data, optimizes cpu performance
+registers:
 
-CPU looks for data in this order L1 cache -> L2 -> L3 -> RAM -> Storage
+CPU looks for data in this order register -> L1 cache -> L2 -> L3 -> RAM -> Storage
 -- CPU proccess all the data stored in the cache, memory and storage.
 -- it first read the code andd compiles it into the machine lanaguage i.e; bits and then executes it and operates/proccess
 
@@ -46,13 +47,96 @@ Key componets of system design:
 -- reliability
 
 Data based, these 3 components are very imp
--- moving data -- data movement between server, user to server, it must be smooth
+-- moving data -- data movement between server, user to server, it must be smooth.
 -- storing data -- selecting database, to retrieve or store data.
 -- transforming data -- converting logs to analyze or user data fo other things.
 
+CAP theorem:
+C -- Consistency
+A -- Availability -- SLO, SLA
+p -- Partition Tolerance
 
-INC14123545
-INC14125175
+The CAP theorem in system design states that a distributed system can only guarantee two out of three properties simultaneously: Consistency, Availability, and Partition Tolerance. 
+Since network partitions are inevitable, the practical trade-off is between Consistency and Availability during a partition. 
 
-lamtlwmcpr5
-lakrwmcpr3
+Availability -- High availability, reliability, fault tolerance, redundancy.
+Speed of the system:
+throughput: how much data can our system handle over a certain period of time, 
+Server throughput: measured in request/second (RPS)
+Database throughput: measured in query/second (QPS)
+Data throughput: measured in byte per second (B/s, BPS) -- the amount of data transferred over a network or processed by a system in a given period of time.
+
+Latency:
+How long it takes to handle a single request
+the time taken for a request to get response
+
+Latency is inversly propotional to Throughput
+
+Networking:
+
+Ip addr
+OSi model
+DNS -- DNS records: Uses A records (for IPv4) and AAAA records (for IPv6) to store the mappings. 
+
+Computer talks to each other using packets
+-- these packets have headers, with all the details and also the data.
+
+Status code: for HTTP
+2xx -- 200 series of exit code, means success code
+3xx -- redirection code
+4xx -- client error codes
+5xx -- server error codes
+
+HTTP methods:
+GET, PUT, POST, DELETE
+
+HTTP is one way connection, but for real time updates we use web sockets
+HTTP: one time data send/recieve protocol, its not continous, it can be from client/server, no over head, each transaction is independent.
+
+
+Websockets:
+-- this is duplex connection between client and server, once connection is established both sides can talk.
+-- this is used for live talking/connection
+-- a persistent, bidirectional communication channel between a client and a server that allows for real-time data exchange
+-- It is established through an initial HTTP handshake, which is then "upgraded" to the WebSocket protocol, 
+	enabling the connection to remain open and allowing data to flow freely
+-- Secure WebSocket connections are denoted by the wss:// protocol, which uses TLS/SSL to encrypt the communication, similar to https://
+
+Cache/CDN:
+cache: storing most used copy of data on the local machine, to avoid getting data again and again.
+reduced latency, lowered server load, improved UX
+1. browser cache -- the browser will store the frequently used/ recent data in local browser space.
+                 -- you can decide for how much time the data can be stored on the browser, like 2 hrs
+				 -- cache hit --> if you get the data from cache
+				 -- cache miss --> if you do not get the data from cache.
+Cache ratio : the percentage of successfull cache requests served ==> cache hit/cache hit + cache miss
+
+2. Server cache -- the server stores the recently requested data on it, to avoid the expensive operations
+				-- the server side cache can be stored on server itself or another specific cache server (redis)
+				write around cache
+				write through cache
+				write back cache
+				Eviction policy: when cache gets full, this is the way to delete the cache based on few parameter and free up some space.
+
+3. Database cache -- cache the most used/recent database query.
+
+4. CDN -- content delivery network
+	   -- the origin server data will stored in a server near to the user, this is similar to cache, the static content is copied and stored here
+	   -- this is done to increase the speed of transaction.
+	   -- pull based CDN, Push based CDN
+	   -- reduced latency, high availability, improved security.
+	   
+Proxy Server:
+-- intermediary between client requesting the resource, and server providing the resource.
+-- cache resources, anonymizing requets, load balancing.
+-- types of proxy server:
+-- forward proxy, reverse proxy, open proxy, transparent proxy, anonymous proxy, distorting proxy, high anonymity proxy.
+
+Load balancer : These are reverse proxies, means they hide the server side details, like ip and other things from the client
+				-- load balncer's distribute load equally to all the servers, which helps in reducing the stress on single server.
+				-- algorithm used in load balancing: Round Robin, least connection, least response time, Ip hashing, weighted algorithms, consistent hashing.
+				-- load balncer also does health check for the servers and if a server is down, then the load balancer will remove it from the loop.
+				-- types: hardware, software, service
+				-- load balancer is single point of failure, if it goes down, none of the system will get traffice and its very fatal.
+				-- to avoid this, there are several ways,
+				1. Redundancy( multiple load balancers), health checks & monitoring, auto scaling & self healing systems, DNS failover

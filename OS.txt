@@ -1,0 +1,71 @@
+Operating System:
+
+Its collection of software
+
+Access to computer hardware
+
+process control board
+
+SCI -- system call interface
+POSIX (Portable Operating System Interface)
+glibc (GNU C Library)
+
+IPC:
+shared memory
+message passing
+
+
+
+boot process:
+
+power on
+
+BIOS -- Basic Input output System ( old) 
+UEFI -- United extensible firmware interface
+Power turns on and the CPU executes the motherboard firmware (BIOS or UEFI).
+Performs a POST (Power-On Self-Test) to check RAM, keyboard, and storage devices.
+Locates the primary boot device based on preset configuration order.
+
+
+
+MBR/GPT boot sector reading -- detect devices
+On legacy BIOS systems, the firmware reads the MBR (Master Boot Record) from the first sector of the hard drive.
+On modern UEFI systems, NVRAM variables are read to find the .
+efi application file stored in the EFI System Partition (ESP).
+Control passes from firmware to the early-stage bootloader
+
+
+
+
+This two will lead us to boot sources:
+Types of boot sources:
+PXE, ipxe, usb, harddisk, cd/dvd
+GRUB (Grand Unified Bootloader) displays its startup menu or automatically selects the default kernel image.
+Loads the compressed Linux kernel file (vmlinuz) and the initial RAM filesystem image (initramfs or initrd) into RAM.
+Hands system control over to the loaded kernel.
+GRUB bootloader loading
+GRUB2 -- ISO, memtest,
+GRUB2 will load vmlinuz( kernel given to us)initrd -- mkinitrd
+Kernel decompression and hardware detection
+Initramfs temporary root mounting, and systemd user-space service activation
+initrd -- mkinitrd
+
+
+4. Kernel Initialization
+The kernel decompresses itself into memory and sets up core hardware clocks, interrupts, and memory management.
+Initializes essential device drivers compiled directly into the kernel or available as modules.
+Mounts the temporary root filesystem provided by initramfs to handle early hardware discovery (like RAID or LVM).
+
+
+5. Initramfs and Transition to Root:
+initramfs runs initial scripts via udev to dynamically detect connected hardware and load required storage drivers.
+The real, permanent root filesystem is checked for errors and mounted read-write.
+The temporary initramfs memory is cleared, and control transitions to user-space
+
+
+6. systemd (PID 1) and Targets:
+The kernel launches systemd as the very first user process with Process ID 1 (PID 1).
+systemd reads configuration units to mount remaining filesystems, set the hostname, and launch background daemons (networking, logging).
+Reaches the default target state (multi-user text mode or graphical desktop target) and launches the login prompt
+
+

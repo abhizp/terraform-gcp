@@ -57,3 +57,5 @@ pinky <username> -- to get all the details about the user.
 /usr/lbin/getprpw <username> 
 
 modprpw -k <username> -- to unlock the account 
+
+echo ~USERNAME --> to get user's hoem directory

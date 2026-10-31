@@ -119,7 +119,7 @@ Budgets:
 budget alering and setting up budget and receiving alerts based on pre-defined metrics.
 mail alerting or pub-sub alerting, and integrating pub-sub to budget alerts and reduce the spends by using cloud function/cloud run triggered by PUB-SUB event.
 
-Labels -- can be helped to group resources and anluze the spend on the resource
+Labels -- can be helped to group resources and analyze the spend on the resource
 
 -- looker studio -- visualize your data of billing 
 
@@ -146,7 +146,7 @@ Peering: access to only public IP of google
 -- peering is limited to within cloud, i.e; vpc to vpc only, and not on-prem to cloud like interconnect.
 -- peering uses cloud-providers network backbone and does not need any special network components setup except for routers
 
-direct peering: used to access Google api and workspace and not the VPC, uses BGP and happens at one goole's edge location.
+direct peering: used to access Google api and workspace and not the VPC, uses BGP and happens at one google's edge location.
 carrier peering : uses ISP to connect to google's apps and services
 NO SLA for peering -- layer 3 - network layer 
 
@@ -323,7 +323,7 @@ including Cassandra, Nginx, Apache Web Server, Elasticsearch, and many others.
 -- Date Type: Metrics (Numbers/Time-Series)
 -- metric explorer
 
-Clodu Logging:
+Cloud Logging:
 -- Monitoring focuses on proactive, numeric metrics (e.g., CPU, uptime) to alert on performance issues via dashboards, while Logging records textual, 
 historical event data (logs) for post-event troubleshooting and forensic analysis
 -- Collects and stores log entries (records of events, errors, or activities) from your applications and infrastructure.
@@ -574,3 +574,122 @@ gcloud config set project [ID] — Sets default project.
 gcloud config set compute/region us-central1 — Sets default region.
 gcloud config list — See current active settings.
 gcloud config configurations create [NAME] — Create a separate profile (e.g., prod vs dev).
+
+gcloud auth login
+gcloud projects describe $(gcloud config get-value project) --format="value(projectNumber)" -- to get project id
+
+gcloud projects get-iam-policy gke-demo-502311 -- to get iam roles for all the accounts
+
+
+loop to set multiple iam roles for single user:
+
+for ROLE in roles/compute.networkAdmin roles/container.admin roles/artifactregistry.admin roles/cloudsql.admin roles/storage.admin roles/iam.serviceAccountAdmin;
+do   
+	gcloud projects add-iam-policy-binding gke-demo-502311 --member="serviceAccount:gitlab-auth-project@gke-demo-502311.iam.gserviceaccount.com" --role="${ROLE}"; 
+done
+
+
+
+Compute Options:
+
+Compute engine
+GKE
+cloud run
+cloud run functions
+App Engine
+
+
+IAM Policy:
+
+Deny Policy >>>> Allow Policy
+
+Basic role
+-- owner, editor, viewer, billing admin --- Broad
+---> owner -- sets up billing and IAM role.
+
+Predefined roles: 
+-- sets of predefined roles
+-- set of permissions bundled together and given a name, which can be assigned based on persons role.
+
+
+Custom Role:
+-- single single permissions can be given per user, granular permissions
+-- can only be applied at resource, project or org level and not at folder level
+
+
+Service account -- identity and resource
+-- you can create a service account, assign it roles.
+-- you can use it as resource -  service account is also a resource, so it can have IAM policies of its own attached to it.
+-- This means that Alice can have the editor role on a service account, and Bob can have the viewer role.
+-- This is just like granting roles for any other Google Cloud resource.
+
+Cloud Identity:
+-- organizations can define policies and manage their users and groups using the Google Admin Console.
+-- Admins can log in and manage Google Cloud resources using the same usernames and passwords they already use in existing Active Directory or LDAP systems.
+-- Using Cloud Identity also means that when someone leaves an organization, an administrator can use the Google Admin Console to disable their account and remove them from groups.
+-- If you’re a Google Cloud customer who is also a Google Workspace customer, this functionality is already available to you in the Google Admin Console.
+
+
+
+4 ways to interact with GCP:
+
+GCP console
+GCP mobile app
+GCP api
+gcp SDK / cloud shell
+
+
+Cloud shell:
+
+5GB Home directory
+Debian Based environment
+Authenticated and pre-loaded with cloud SDK and popular tools, -- you still have to authenticate with your identity and may need to set projects/change projects'
+
+Services and APIs are enabled on a per-Project basis.
+Project ID -- globally Unique and can never be changed
+Project Name -- Given by us, can be changed any time
+Project Number -- unique, 
+
+
+VPC: Google VPC networks are global.
+
+-- A virtual private cloud, or VPC, is a secure, individual, private cloud-computing model hosted within a public cloud – like Google Cloud!
+-- VPC networks connect Google Cloud resources to each other and to the internet.
+-- This includes segmenting networks, using firewall rules to restrict access to instances, and creating static routes to forward traffic to specific destinations.
+-- subnets, which is a segmented piece of the larger network, in any Google Cloud region worldwide.
+-- Subnets can span the zones that make up a region.
+-- The size of a subnet can be increased by expanding the range of IP addresses allocated to it, and doing so won’t affect virtual machines that are already configured.
+
+
+-- HAS routing tables -- builtin, no routers
+-- VPC has firewall, for ingress and egress -- network tags can be used, to distinguish
+-- VPC -- per project
+-- VPC peering -- relationship between 2 VPC can be established
+-- SHared VPC
+
+-- A virtual Private Cloud VPC network is a virtual version of a physical network that provides connectivity for your Compute resources
+-- Offers built-in internal pass-through network load balancers and proxy systems for internal application load balancers.
+-- A VPC network connects to on-premises networks by using Cloud VPN tunnels and Cloud interconnect attachments.
+-- We get preconfigured firewall and routes.
+
+-- We can have multiple VPC
+-- AUto mode v/s custom mode
+
+
+-- Multiple Network Interfaces:
+VPC networks are isolated private networking domains by default.
+VM instances within a VPC network can communicate among themselves by using internal IP addresses as long as firewall rules allow it.
+no internal IP address communication is allowed between networks unless you set up mechanisms such as VPC peering or VPN.
+
+
+-- Every VM instance within a VPC network starts with one built-in default network interface.
+-- When you add more interfaces, you must choose a VPC network and a subnet within it for each new interface.
+-- Importantly, each additional interface has to connect to a different VPC network than the others.
+-- This multi-interface setup lets you establish configurations where a single instance directly connects to multiple VPC networks.
+
+Use cases:
+-- multiple network interfaces when you need a single instance to act as :
+-- network appliance for tasks like load balancing, intrusion detection, prevention, IDS, IPS, and web application firewalls, WAF
+-- Multiple network interfaces let you create configurations in which an instance connects directly to several VPC networks.
+-- Each of the interfaces must have an internal IP address and each interface can also have an external IP address.
+-- ********* you cannot add or remove NIC to an instance once the instance is created so make sure to add the required NIC when you create the instance.*********

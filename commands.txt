@@ -1,0 +1,65 @@
+New IP : 10.106.66.41
+Subnet Mask : 255.255.255.0
+Gateway : 10.106.66.99
+DNS1 : 162.53.36.36 
+DNS2 : 162.53.200.8
+Network ID : 10.106.66.0
+Broadcast ID : 10.106.66.255
+
+
+cd /etc/sysconfig/network-scripts/
+
+vi ifcfg-eth0 -- take backup before changing
+
+vi /etc/hosts
+
+systemctl status NetworkManager.service
+
+------------------------------------------------------------------------------
+
+vlhevcspr02	clhediqpr002
+
+
+
+https://vlhevcspr02.ngco.com
+lce\ablnu_adm
+xU0WRy)ZiU_l_}n
+
+abhishek.lnu@loblaw.ca
+
+-----------------------------------------------------------------------
+
+ip -a
+ifconfig -a
+ip addr show
+ip route show
+
+
+systemctl status NetworkManager.service
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+backup plan : nmcli
+
+nmcli connection show
+nmcli device status
+
+nmcli connection modify eth0 ifname eth0 ipv4.method manual ipv4.addresses 10.106.66.41/24 gw4 10.106.66.99 ipv4.dns "162.53.36.36 162.53.200.8"
+
+nmcli connection modify eth0 ifname eth0 ipv4.method manual ipv4.addresses 10.106.66.41/24 ipv4.gateway 10.106.66.99 ipv4.dns "162.53.36.36 162.53.200.8"  -- if above one does not work.
+
+nmcli connection down eth0 && nmcli connection up eth0
+
+
+nmcli connection down eth0
+nmcli connection up eth0
+
+
+
+nmcli connection modify eth0 ipv4.addresses 10.106.66.41/24
+nmcli connection modify eth0 ipv4.gateway 10.106.66.99
+nmcli connection modify eth0 ipv4.dns "162.53.36.36 162.53.200.8"
+nmcli connection modify eth0 ipv4.method manual
+
+

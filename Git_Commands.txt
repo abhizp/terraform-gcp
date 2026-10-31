@@ -98,5 +98,450 @@ git push origin --delete tag v1.0 -- to delete tag in remote repositories
 git tag -f v1.0 <new-commit-hash>
 git push --force origin v1.0 -- If you need to move a tag to a different commit and update the remote, use --force
 
+git tag -d <tagname> -- to delete a already existing tag
+git push --force origin <tagname> -- this will push and change all the tags remotely for everyone
+
+
+-------------------------------------------Git Stash--------------------------------------------------------
+
+-- technically works by creating a special kind of local commit to store your changes
+-- main distinction is that a regular commit is a permanent part of your project's public history on a specific branch
+-- stash is a temporary, local, and private storage mechanism that keeps your working directory clean. 
+
+
+-- its basically a local commit with out committing.
+-- Tracked files (both staged and unstaged) are stashed by default.
+stash stack -- Each time you run git stash, your changes are saved on top of a "stack".
+
+git stash - Stash your changes
+git stash push -m "message" - Stash with a message
+git stash list - List all stashes
+git stash branch <branchname> - Create a branch from a stash
+git stash show -- to show stash details
+git stash show -p -- to see the exact line changed by the recent stash
+git stash apply -- restore most recently stashed changes
+git stash apply stash@{n} -- to apply a stash with specific stash number
+git stash clear -- to delete all your stashs
+git stash drop stash@{0} -- delete a specific stash when you no longer need it.
+git stash pop -- o remove the latest stash from the stack
+
+------------------------------------Git History---------------------------------------
+
+only commited changes will appear in git log
+
+git log - Show full commit history
+git log --oneline - Show a summary of commits -- quick summary
+git show <commit> - Show details of a specific commit
+git diff - See unstaged changes -- use this before commiting your work
+git diff --staged - See staged changes -- See what is different between your staged files and the last commit
+
+git diff <commit1> <commit2> -- compare two commits
+git log --author="Alice" -- See only the commits made by a specific author:
+git log --since="2 weeks ago" -- show recent commits
+git log --stat == See which files were changed in each commit and how many lines were added or removed
+
+git log --graph -- to see all commits history in ascii graph format
+
+
+------------------------------Git help-----------------------------------------------
+
+git help <command> - See the manual page for a command
+git <command> --help - See help for a command (same as above)
+git <command> -h - See a quick summary of options
+git help --all - List all possible Git commands
+git help -g - List guides and concepts
+
+-----------------------------------Git Branch--------------------------------------------------
+
+-- branch is like a separate workspace where you can make changes and try new ideas without affecting the main project. 
+-- use case :
+Developing a new feature
+Fixing a bug
+Experimenting with ideas
+
+git branch hello-world-images -- Create a new branch 
+
+git branch -- list all branches
+
+when to create a new brach none of the files are staged/marked to be tracked, you have to stage them -- git add --all
+Untill you commit the changes the brach will not record anything remember to always commit and switch to other branch
+
+git checkout hello-world-images -- to switch between branches, use checkout to switch between current branch to the next one
+
+git checkout -b new_branch -- this will switch to the brach and also creates a brach if it does not exist.
+
+git branch -d hello-world-images -- to delete a branch when the work is complete -- delete a already merged branch
+
+git branch -m old-name new-name -- rename a branch.
+git switch branch-name -- to switch between branches, same as checkout
+git branch -D branch-name -- delete an unmerged branch
+
+-------------------------------------Git merge----------------------------
+
+-- To combine the changes from one branch into another, use git merge.
+-- Merging in Git means combining the changes from one branch into another, this is how you bring your work together after working separately on different features or bug fixes.
+
+-- switch to brach you want to merge into, and then use git merge tp merge two branches
+eg: git switch master
+
+git merge new_branch -- merge the new_branch to the master
+
+-- only commited changes / files will be merged, staged will not be merged
+-- Always commit or stash your changes before starting a merge.
+-- Regularly merge from the main branch into your feature branch to minimize conflicts.
+-- Read and resolve conflicts carefully—don't just accept all changes blindly.
+-- Write clear and descriptive merge commit messages.
+
+git merge --abort -- abort a merge
+********************Resolve a conflict and complete the merge: Edit the conflicted file(s), then git add file and git commit******************
+Fast-forward merge -- A fast-forward merge is possible only when the "target" branch (e.g., main) has no new commits since you branched off it to create the "feature" branch. 
+
+git merge --ff-only <branch-name> --This ensures that Git only merges if a fast-forward is possible. If the branches have diverged, it will abort the merge.
+
+git merge --no-ff <branch-name> --This forces Git to create a merge commit even if a fast-forward is possible, which preserves the historical record of the branch's existence. 
+-- always use --no-ff to preserve commits and doesn't just move the pointer forward
+
+
+git merge --squash branchname -- If you want to combine all the changes from a branch into a single commit (instead of keeping every commit).
+-- This is useful for cleaning up commit history before merging.
+
+git merge --abort -- If you run into trouble during a merge (like a conflict you don't want to resolve), you can cancel the merge and go back to how things were before 
+
+*****************************************Merge Conflict****************************************
+
+-- happens when changes in two branches touch the same part of a file and Git doesn't know which version to keep.
+-- edit the file having file conflict and review it and then stage it and then commit and later merge it.
+
+git checkout master -- switch to the branch where you want to merge the changes
+
+git merge hello-world-images -- now start merging the branches -- The merge will fail, as there is conflict between the versions 
+
+git status -- to check where the conflict is happening, 
+
+fix the conflicts by editing the files where conflict happened
+
+after editing -- stage the changes again
+
+git add <file_name> -- stage the file where conflict is fixed.
+
+git commit -m "conflict fixed" --- now commit the file where you fixed the merge, only after you commit here, the merge will complete, untill here the merge will stop.
+
+git branch -d hello-world-images -- now delete the merged branch, as you already recorded all the changes here.
+
+Origin : The default name for your main remote repository. You can rename or have multiple remotes if needed.
+
+=================================================Git Remote Repo====================================================================
+
+git remote -v -- to know which remote repo we are currently connected to
+
+fetch --- only download
+push -- to download and upload
+
+git remote show origin -- same as above
+
+git branch -m master main --> to rename your master as main, because main is used in the latest standards
+
+git branch --set-upstream-to=origin/main main -- for the first time tell the git that you want to track the main branch from local and connect it to main at remote too.
+
+git pull origin main --allow-unrelated-histories -- this will let the lready edited remote / local repo to merge, as they both have different histories
+
+git pull = fetch + merge
+
+git fetch -- downloads new data from a remote repository, but does not change your working files or branches. 
+			It lets you see what others have pushed before you merge or pull.
+			
+git branch -a -- to see all local and remote branches
+
+----------------------------------Git revert--------------------------------------------------------
+
+git revert -- command undoes a previous commit by creating a new commit that reverses the changes.
+
+git revert will keep the commit history intact, and it will create a new commit to revert the changes
+
+git revert HEAD - Revert the latest commit
+git revert <commit> - Revert a specific commit
+git revert HEAD~2 - Revert a commit further back in history  -- git revert HEAD~n --> n- number commits back where you want to revert to.
+git revert --no-edit - Skip commit message editor
+git log --oneline - Show commit history
+
+git revert HEAD --no-edit --- Once you've found the commit you want to undo, use git revert to create a new commit that reverses the changes
+
+git revert --abort -- to abort the reverse process.
+git revert --continue -- to continue revert despite warnings
+
+-------------------------------------------Git reset--------------------------------------------------
+
+git reset -- command moves your current branch (HEAD) to a different commit.
+-- Use it to undo commits, unstage files, or clean up your history.
+
+
+git reset --soft <commit> - Move HEAD to commit, keep changes staged
+git reset --mixed <commit> - Move HEAD to commit, unstage changes (default)
+git reset --hard <commit> - Move HEAD to commit, discard all changes
+git reset <file> - Unstage a file
+git log --oneline - Show commit history
+
+-- this is dangerous as it can permanently make changes and may lead to deletion of few commits/changes
+
+------------------------------------------------Git Amend--------------------------------------------------------
+
+Git Amend is a command that allows you to modify the most recent commit, You can use it to fix typos, add or remove files, or change the commit message.
+
+git commit --amend -m "New message" -- to change your most recent commit message.
+
+git add <file> and git commit --amend  -- add files to your last commit.
+
+git reset HEAD^ -- <file> and git commit --amend -- to remove file from your last commit.
+
+git add file.txt and git commit --amend -- to add the new file to your last commit.
+
+----------------------------------------------Git Rebase-------------------------------------------------
+
+-- git rebase, especially the interactive mode (git rebase -i), gives you a powerful "second chance" to review, edit, reorder, squash, or drop commits, 
+creating a cleaner, linear commit history by replaying your changes on a new base, essentially rewriting history for a pristine timeline before merging. 
+
+-- It is a process that moves a series of commits to a new base, creating new commits for each one, but it offers an interactive mode
+
+-- is considered dangerous primarily because it rewrites the commit history. This can cause significant issues, especially when used on shared or public branches
+
+-- Rebasing moves or combines a sequence of commits to a new base commit.
+-- Rebasing can make your commit history easier to read by avoiding unnecessary merge commits.
+
+Keep a clean, linear project history
+Avoid unnecessary merge commits
+Combine multiple commits into one
+Edit or reorder commits
+
+git checkout feature-branch
+git rebase main -- this creates new base/commit stash, where you can edit and rewrite the commit, this will let you stash your feature branch commits
+on main branch, this does not merge instead extends the commit history.
+
+-- The result is a new, linear history where it appears as if you started your feature development from the most recent point in the target branch's history. 
+Your original commits are gone and replaced by new ones with new commit hashes
+
+-- This differs from using git merge, which would create a special "merge commit" that ties the two histories together while preserving both histories intact [1]. 
+Rebasing creates a cleaner, more linear project history. 
+
+-- do not rebase on the shared branch, this will disrupt everything.
+
+git rebase -i HEAD~3 -- interactive mode, more control.
+
+git add fixed_file.txt
+git rebase --continue -- fix conflict and continue rebase
+
+git rebase --abort -- stop rebasing
+
+git rebase --skip -- skip particular commit and move ahead with rebasing.
+
+---------------------------------------------Git Reflog--------------------------------------------------------------------
+
+-- git reflog records updates to the tip of branches and HEAD.
+-- It lets you see where your branch and HEAD have been, even changes you made by mistake, This is useful for recovering lost commits or undoing a reset.
+
+Recover lost commits or changes
+Undo a reset or a merge
+See the history of your branch and HEAD
+
+git reflog -- to see history of head's movement
+
+git reset --hard HEAD@{2} -- this reset's to the head's position 2 commits back, basically undo twice.
+
+git reflog expire --expire=30.days refs/heads/main -- clean up reflog date.
+
+------------------------------------------------Git recovery-------------------------------------------------------
+
+git checkout -b branch-name <commit-hash> -- to get the deleted branch back
+
+git reflog to get the history.
+
+git restore filename.txt -- to restore deleted file.
+
+---------------------------------------------git ignore------------------------------------------------------------
+
+-- .gitignore file tells Git which files and folders to ignore (not track)
+-- gitignore file itself is tracked by Git, so everyone using the repository ignores the same files.
+
+Go to the root of your local Git repository.
+Create a file named .gitignore
+
+git rm --cached filename.txt -- to stop tracking and ignore the already tracked file.
+
+Everyone on your team gets the same settings because this file is versioned with your project.
+
+--------------------------------------------git attributes--------------------------------------------------------------------
+
+-- The .gitattributes file is a special file that tells Git how to handle specific files in your repository.
+Everyone on your team gets the same settings because this file is versioned with your project.
+
+To enforce consistent line endings across different operating systems
+To mark files as binary (so Git doesn't try to merge or change them)
+To enable Git LFS for large files
+To set up custom diff or merge tools for special file types
+To control how files are exported in archives
+
+Go to the root of your repository (or a subfolder for local rules).
+Create or edit the .gitattributes file.
+Add rules, one per line, for how Git should treat files.
+
+git add .gitattributes -- after you make changes to the attribute file, always add it so effects can take place
+
+
+----------------------------------------Git LFS (Large File Storage)-----------------------------------------------------------------
+
+--- is an extension for Git that helps you manage large files (like videos, images, or datasets) efficiently.
+--- Instead of storing big files directly in your repository, 
+--- LFS stores a small pointer file in your repo and keeps the real content on a separate LFS server.
+
+-- This keeps your repository fast and small, even if you work with huge files.
+-- Everyone who clones the repo gets the pointer, and Git LFS fetches the real file content as needed.
+
+git lfs install -- to install LFS
+
+git lfs track "*.psd" -- tell git to track which files using LFS
+
+-- When you track a file type with LFS, Git adds a rule to the .gitattributes file. This tells Git to use LFS for those files.
+
+Add files as usual: git add largefile.psd
+Commit: git commit -m "Add large file"
+Push: git push origin main
+The actual file data is stored on the LFS server, while your repo contains a pointer file.
+
+-- If you clone or pull a repo with LFS files, Git will download the real content from the LFS server (if you have LFS installed).
+
+git lfs ls-files -- to see which all files are managed by LFS
+
+git lfs untrack "*.psd"
+git add .gitattributes -- to untrack the LFS files.
+
+git lfs pull -- to pull lfs pointer and lfs files from remote repo
+
+-------------------------------------------------------Commit Signing--------------------------------------------------
+
+Signing a commit is like putting your personal signature on your work.
+
+It proves that you really made the change, and helps others trust your code.
+
+On platforms like GitHub or GitLab, signed commits often get a Verified badge.
+
+GPG (GNU Privacy Guard) is a tool that lets you create a digital key, kind of like a secret password, to sign things.
+
+gpg --full-generate-key -- generate key
+gpg --list-secret-keys --keyid-format=long -- list gpg key
+git config --global user.signingkey <your-key-id> -- to set a signing key
+
+git commit -S -m "message" -- to sign a commit. --> -S is the option
+
+git tag -s v1.0 -m "version 1.0" --> -s is the option for tag 
+
+git config --global commit.gpgSign true -- sign all commits automatically
+
+git log --show-signature -- to check if a commit is signed.
+
+-----------------------------------------------------------------------------------------------------------------------
+
+Cherry-pick lets you copy a single commit from one branch to another. It's useful when you want just one (or a few) changes, not everything from another branch.
+
+A patch is a file with changes from one or more commits. You can share a patch or apply it to another repository, even if it's unrelated to your own.
+
+======================================================================================================================
+
+A merge conflict happens when two branches change the same part of a file.
+
+Git can't decide which change to keep, so you have to choose.
+
+You must resolve the conflict before you can finish the merge
+
+==============================================================================================================================
+
+CI/CD stands for Continuous Integration and Continuous Deployment/Delivery.
+
+It means your code is automatically tested and deployed every time you push.
+Find bugs before they reach users
+Deploy changes faster and more safely
+Reduce manual steps and mistakes
+Get quick feedback on every push
+
+Every time you push code to your Git repository:
+
+The CI/CD service (like GitHub Actions or GitLab CI) detects the change
+It runs tests, builds your project, and can deploy automatically
+If something fails, you get notified right away
+
+[Developer] --push--> [Git Repository] --triggers--> [CI/CD Pipeline: Test, Build, Deploy] 
+
+CI/CD helps catch bugs early and speeds up delivery. Even small projects can benefit from automation!
+
+Here are some important terms:
+
+Workflow: A series of jobs that run together
+Job: A group of steps that run together
+Step: A single task, like checking out code or running tests
+Runner: The computer/server that runs your jobs
+Trigger: Decides when your workflow runs
+Environment Variables: Settings for your workflow
+Secrets: Passwords or API keys
+
+git commit -m "Update docs [skip ci]" -- to skip build
+
+.yml file structure
+
+name: Sets the workflow's display name in GitHub.
+on: Decides when the workflow runs (here: every push).
+jobs: Groups together steps that run on a runner.
+build: The name of this job (can be anything).
+runs-on: Picks the type of server (here: Ubuntu Linux).
+steps: Each step does one thing, like checking out code or running tests.
+uses: Uses a pre-made GitHub Action (here: checks out your code).
+name: (under steps) Gives a step a label.
+run: Runs a shell command (here: npm test to run tests).
+
+--------------------------------------------------------Git hooks----------------------------------------
+
+Git hooks are scripts that run automatically when certain Git events happen, like making a commit or pushing code.
+Hooks help you automate repetitive tasks, enforce coding standards, and catch problems early.
+
+For example, you can:
+
+Run tests before every commit or push
+Check code style automatically
+Block bad commit messages
+Enforce rules for everyone on your team
+
+Hooks are stored in .git/hooks inside your repository.
+
+There are many types of hooks, but the most common are:
+
+pre-commit
+commit-msg
+pre-push
+pre-receive
+post-receive
+
+----------------------------------------------------------Git Submodules--------------------------------------------
+
+Git submodules let you include one Git repository inside another as a subdirectory.
+
+This is useful for adding libraries or dependencies managed in separate repositories, while keeping their commit history separate.
+
+------------------------------------------------------------remote repo-------------------------------------------------
+
+git remote add upstream https://github.com/other/repo.git -- to add a remote repo
+
+git remote remove upstream -- to remove a remote repo
+
+git remote rename origin main-origin -- rename the existing remote
+
+git remote -v -- list all remote
+
+git remote show upstream -- get detailed info about a specific remote
+
+git remote -v (or --verbose) is used in Git to list all currently configured remote repositories associated with your local project. 
+
+
+
+
+git branch -m master main  -- to change branch name from master to main
+
+git branch -- to list all local branches
 
 
