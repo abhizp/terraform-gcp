@@ -693,3 +693,139 @@ Use cases:
 -- Multiple network interfaces let you create configurations in which an instance connects directly to several VPC networks.
 -- Each of the interfaces must have an internal IP address and each interface can also have an external IP address.
 -- ********* you cannot add or remove NIC to an instance once the instance is created so make sure to add the required NIC when you create the instance.*********
+-- By configuring multiple interfaces, you can apply separate firewall rules and access controls to each interface separately and enforce security functions in communications from the public to a private domain.
+
+
+Remember:
+
+-- You can only configure a network interface when you create an instance.
+-- Each network interface configured in a single instance must be attached to a different VPC network.
+-- Each interface must belong to a subnet whose IP range does not overlap with the subnets of any other interfaces.
+-- The additional VPC networks that the multiple interfaces will attach to must exist before you create the instance.
+-- You cannot delete a network interface without deleting the instance.
+-- When an internal DNS, domain name system, query is made with the instance host name, it resolves to the primary interface nic0 of the instance.
+-- The maximum number of network interfaces per instance is eight, but this depends on the instances machine type
+-- 1 NIC per vCPU
+--  In a multiple interface instance, every interface gets a route for the subnet that it is in. In addition, the instance gets a single default route that is associated with the primary interface ens4. Unless manually configured otherwise, 
+any traffic leaving an instance for any destination other than a directly connected subnet will leave the instance via the default route on ens4.
+
+-- VM's within same VPC irrespective of Subnet can talk to each other
+
+
+
+VPC creation:
+
+gcloud compute networks create managementnet --project=qwiklabs-gcp-03-8d458565d5e5 --subnet-mode=custom --bgp-routing-mode=regional --bgp-best-path-selection-mode=legacy
+
+
+or
+
+gcloud compute networks create privatenet --subnet-mode=custom
+
+Subent creation:
+
+gcloud compute networks subnets create managementsubnet-us --project=qwiklabs-gcp-03-8d458565d5e5 --range=10.130.0.0/20 --stack-type=IPV4_ONLY --network=managementnet --region=us-east4
+
+or
+
+gcloud compute networks subnets create privatesubnet-us --network=privatenet --region=us-east4 --range=172.16.0.0/24
+
+to list:
+
+gcloud compute networks list
+
+to list VPC:
+
+gcloud compute networks subnets list --sort-by=NETWORK
+
+
+
+Firewall Creation:
+
+gcloud compute --project=qwiklabs-gcp-03-8d458565d5e5 firewall-rules create managementnet-allow-icmp-ssh-rdp --direction=INGRESS --priority=1000 --network=managementnet --action=ALLOW --rules=tcp:22,tcp:3389,icmp --source-ranges=0.0.0.0/0
+
+REST format:
+
+POST https://compute.googleapis.com/compute/beta/projects/qwiklabs-gcp-03-8d458565d5e5/global/firewalls
+{"allowed":[{"IPProtocol":"tcp","ports":["22","3389"]},
+{"IPProtocol":"icmp"}],"direction":"INGRESS","kind":"compute#firewall","name":"managementnet-allow-icmp-ssh-rdp","network":"projects/qwiklabs-gcp-03-8d458565d5e5/global/networks/managementnet","priority":1000,"selfLink":"projects/qwiklabs-gcp-03-8d458565d5e5/global/firewalls/managementnet-allow-icmp-ssh-rdp","sourceRanges":["0.0.0.0/0"]}
+
+or 
+
+
+gcloud compute firewall-rules create privatenet-allow-icmp-ssh-rdp --direction=INGRESS --priority=1000 --network=privatenet --action=ALLOW --rules=icmp,tcp:22,tcp:3389 --source-ranges=0.0.0.0/0
+
+List:
+
+gcloud compute firewall-rules list --sort-by=NETWORK
+
+
+VM creation:
+
+gcloud compute instances create privatenet-us-vm --zone=us-east4-b --machine-type=e2-medium --subnet=privatesubnet-us
+
+List:
+
+gcloud compute instances list --sort-by=ZONE
+
+Network service tier: for lower cost, latency, performance
+
+Premium tier
+Standard tier
+
+VPC peering:
+connecting and establishing a direct connection between their two organizations by project-a and project-b.
+Public internet peering introduces unacceptable latency and security risks, while dedicated VPNs are proving cost-prohibitive.
+-- private, secure, and scales with their evolving needs.
+-- VPC Network Peering allows private connectivity across two VPC networks.
+-- Even if both VPC networks belong to the same project or the same organization, you can still peer them.
+-- each VPC network will have firewall rules that define what traffic is allowed or denied between the peered networks.
+
+
+HOW?
+-- Each organization has its own organization node, VPC network, VM instances, Network Admin, and Instance Admin.
+-- To successfully establish VPC Network Peering, two peering relationships must be created.
+-- The project-a network administrator must peer the project-a network with the project-b network.
+-- The project-b network administrator must peer the project-b network with the project-a network.
+-- When both peering connections are created, the VPC Network Peering session becomes active and routes are exchanged.
+-- project-id is requeired for the whole process
+
+Benifits:
+-- peering relationships let the VM instance use their internal IP addresses to communicate privately.
+-- VPC Network Peering is a decentralized or distributed approach to multi-project networking.
+--  VPC Network Peering does not incur the network latency, security, and cost drawbacks that are present when you use external IP addresses or VPNs.
+Network latency: Public IP networking results in higher latency than private networking.
+Network security: Service owners do not need to have their services exposed to the public internet and deal with its associated risks.
+Network cost: Google Cloud charges egress bandwidth pricing for networks using external IPs to communicate, even if the traffic is within the same zone. If, however, the networks are peered, they can use internal IPs to communicate and save on those egress costs. Regular network pricing still applies to all traffic.
+
+Remember:
+--  VPC Network Peering works with Compute Engine, Google Kubernetes Engine, and App Engine flexible environments.
+-- network administrator role to perform peering.
+-- Peered VPC networks remain administratively separate.
+-- routes, firewalls, VPNs, and other traffic management tools are administered and applied separately in each of the VPC networks.
+-- no overlapping subents or network
+-- This arrangement allows either side to delete the peering association at any time.
+-- overlap of network is not allowed
+-- Only directly peered networks can communicate, which means that transitive peering is not supported.
+-- Custom routes help achieve a desired granularity that cannot be achieved with a default route.
+-- Sharing custom routes and dynamic routes with peered VPC networks let networks learn routes directly from their peered networks.
+-- configure private communication between VPC networks in the same project, you must use VPC network peering.
+-- VPC network peering is a decentralized approach.
+-- Each VPC network is controlled by administrator groups in that VPC networks organization.
+
+
+
+Shared VPC:
+
+centrally manage the VPC networks while still segregating workloads that use these networks.
+shared VPC, you designate a project as a host project and attach one or more other service projects to it.
+overall VPC network is called the Shared VPC network.
+Shared VPC makes use of Cloud IAM roles for delegated administration.
+org admin or project owner access is required to set up sub nets, both on host and service project
+Shared VPC administrators have full control over the resources in the host project, including administration of the shared VPC network.
+ billing for those VM instances is attributed to the project where the resources are created, which are the service projects.
+-- shared VPC only works within the same organization.
+-- does not work in same project
+-- Shared VPC only works across projects.
+
+
